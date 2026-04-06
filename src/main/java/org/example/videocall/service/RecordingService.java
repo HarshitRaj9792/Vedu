@@ -33,16 +33,19 @@ public class RecordingService {
 
     // Track the active egressId per room for stopping
     private final Map<String, String> activeEgress = new ConcurrentHashMap<>();
+    
+    // Track the teacherId by egressId
+    private final Map<String, String> egressToTeacherMap = new ConcurrentHashMap<>();
 
-    public String startRecording(String roomName) throws Exception {
+    public String startRecording(String roomName, String teacherId) throws Exception {
         // S3/MinIO output config
 
         Thread.sleep(2000);
         LivekitEgress.S3Upload s3 = LivekitEgress.S3Upload.newBuilder()
-                .setAccessKey("minioadmin")  /// hardcoded the envs
-                .setSecret("minioadmin")
-                .setBucket("recordings")
-                .setEndpoint("http://minio:9000")
+                .setAccessKey(this.miniOKey)
+                .setSecret(this.miniOSecret)
+                .setBucket(this.miniOBucket)
+                .setEndpoint(this.miniOEndpoint)
                 .setRegion("us-east-1")
                 .setForcePathStyle(true)
                 .build();
@@ -68,8 +71,17 @@ public class RecordingService {
 
         String egressId = response.body().getEgressId();
         activeEgress.put(roomName, egressId);
+        egressToTeacherMap.put(egressId, teacherId);
         log.info("Recording started for room {}: egressId={}", roomName, egressId);
         return egressId;
+    }
+
+    public String getTeacherIdForEgress(String egressId) {
+        return egressToTeacherMap.get(egressId);
+    }
+
+    public void removeTeacherIdMapping(String egressId) {
+        egressToTeacherMap.remove(egressId);
     }
 
     public void stopRecording(String roomName) throws Exception {

@@ -9,4 +9,6 @@ import java.util.UUID;
 @Repository
 public interface Student_repo extends JpaRepository<Student, UUID> {
     java.util.Optional<Student> findByEmail(String email);
+    
+    java.util.List<Student> findByCourseIgnoreCaseAndStudentClassIgnoreCase(String course, String studentClass);
 }

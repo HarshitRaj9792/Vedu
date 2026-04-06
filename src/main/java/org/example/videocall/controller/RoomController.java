@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.example.videocall.repo.RecordingRepository;
+import org.example.videocall.model.Recording;
 
 import java.util.List;
 import java.util.Map;
@@ -30,6 +32,9 @@ public class RoomController {
 
     @Value("${OPENVIDU_SECRET}")
     private String livekitApiSecret;
+
+    @Value("${MINIO_PUBLIC_URL:http://localhost:9000}")
+    private String minioPublicUrl;
     @Autowired
     private  TokenService tokenService;
     @Autowired
@@ -38,6 +43,8 @@ public class RoomController {
     private  liveKitRoomManager livekitRoomManager;
     @Autowired
     private RecordingService recordingService;
+    @Autowired
+    private RecordingRepository recordingRepository;
 
     /**
      * Updated endpoint to match the discovered logic.
@@ -123,6 +130,53 @@ public class RoomController {
                 log.info("Classroom {} has closed.", event.getRoom().getName());
             }
 
+            // Detect when recording (egress) finishes to save to DB
+            if (event.getEvent().equals("egress_ended")) {
+                livekit.LivekitEgress.EgressInfo egressInfo = event.getEgressInfo();
+                if (egressInfo != null) {
+                    String egressId = egressInfo.getEgressId();
+                    String teacherId = recordingService.getTeacherIdForEgress(egressId);
+                    String room = egressInfo.getRoomName();
+                    
+                    String fileUrl = "";
+                    if (egressInfo.getFileResultsCount() > 0) {
+                        fileUrl = egressInfo.getFileResults(0).getLocation();
+                    } else if (egressInfo.hasFile()) {
+                        fileUrl = egressInfo.getFile().getLocation();
+                    }
+
+                    if (teacherId != null && !fileUrl.isEmpty()) {
+                        Recording recording = new Recording();
+                        recording.setTeacherId(teacherId);
+                        recording.setRoomName(room != null ? room : "Unknown Room");
+                        // Egress returns internal docker network url like "http://minio:9000/recordings/..."
+                        // We extract the path and bind it to the dynamic public URL (Azure IP + port or Localhost)
+                        String pathSegment = fileUrl;
+                        try {
+                            if (fileUrl.startsWith("http")) {
+                                pathSegment = new java.net.URL(fileUrl).getPath();
+                            }
+                        } catch (Exception ignored) { }
+                        
+                        if (pathSegment.startsWith("/")) {
+                            pathSegment = pathSegment.substring(1);
+                        }
+
+                        String finalUrl = minioPublicUrl;
+                        if (!finalUrl.endsWith("/")) finalUrl += "/";
+                        finalUrl += pathSegment;
+
+                        recording.setFileUrl(finalUrl);
+                        recordingRepository.save(recording);
+                        
+                        recordingService.removeTeacherIdMapping(egressId);
+                        log.info("Saved recording artifact for teacher {} -> {}", teacherId, fileUrl);
+                    } else {
+                        log.warn("Egress {} completed but missing teacher mapping or URL", egressId);
+                    }
+                }
+            }
+
         } catch (Exception e) {
             log.error("Webhook validation failed: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Signature");
@@ -155,7 +209,7 @@ public class RoomController {
 
         String roomName = param.get("roomName");
         try{
-            String egressId = recordingService.startRecording(roomName);
+            String egressId = recordingService.startRecording(roomName, userId);
             return  ResponseEntity.ok(Map.of("egressId", egressId,"status", "recording"));
         }catch (Exception e){
             log.error("Recording failed: {}", e.getMessage());

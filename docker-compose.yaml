@@ -124,7 +124,7 @@ services:
     shm_size: 1gb
     volumes:
       - ./egress.yaml:/etc/egress.yaml:ro
-      - /tmp/egress-data:/tmp/egress  # Temporary recording storage
+      - egress-data:/tmp/egress  # Temporary recording storage
     depends_on:
       minio:
         condition: service_healthy
@@ -178,6 +178,7 @@ services:
 
       # MinIO Configuration
       - MINIO_URL=http://minio:9000
+      - MINIO_PUBLIC_URL=${MINIO_PUBLIC_URL:-http://localhost:9000}
       - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
       - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin}
       - MINIO_BUCKET=${MINIO_BUCKET}
@@ -185,6 +186,14 @@ services:
       # Redis Configuration
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+
+      # Email Configuration
+      - SPRING_MAIL_HOST=${SMTP_HOST}
+      - SPRING_MAIL_PORT=${SMTP_PORT}
+      - SPRING_MAIL_USERNAME=${SMTP_USERNAME}
+      - SPRING_MAIL_PASSWORD=${SMTP_PASSWORD}
+      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH=true
+      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=true
     depends_on:
       livekit:
         condition: service_started

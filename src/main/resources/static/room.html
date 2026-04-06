@@ -45,7 +45,7 @@
       overflow: hidden;
     }
 
-    /* ── PAGE STRUCTURE ─────────────────────────── */
+    /* -- PAGE STRUCTURE --------------------------- */
     #app {
       display: flex;
       flex-direction: column;
@@ -53,7 +53,7 @@
       height: 100dvh;
     }
 
-    /* ── VIDEO GRID (opentok-layout target) ─────── */
+    /* -- VIDEO GRID (opentok-layout target) ------- */
     /*
          * RULES required by opentok-layout-js:
          *   1. Must be position: relative (or absolute)
@@ -69,7 +69,7 @@
       padding: 8px;
     }
 
-    /* ── VIDEO TILE (each participant/screen) ────── */
+    /* -- VIDEO TILE (each participant/screen) ------ */
     /*
          * RULES:
          *   position: absolute is MANDATORY — opentok-layout sets coordinates directly.
@@ -183,7 +183,7 @@
       background: rgba(79, 110, 247, 0.5);
     }
 
-    /* ── CONTROLS BAR ────────────────────────────── */
+    /* -- CONTROLS BAR ------------------------------ */
     #controls {
       height: var(--ctrl-h);
       background: rgba(19, 25, 40, 0.9);
@@ -236,7 +236,7 @@
       background: #e03358;
     }
 
-    /* ── MEDIA QUERIES (Mobile) ──────────────────── */
+    /* -- MEDIA QUERIES (Mobile) -------------------- */
     @media (max-width: 600px) {
       :root {
         --ctrl-h: 64px;
@@ -261,7 +261,7 @@
       }
     }
 
-    /* ── EMPTY STATE ─────────────────────────────── */
+    /* -- EMPTY STATE ------------------------------- */
     #empty-msg {
       position: absolute;
       inset: 0;
@@ -279,7 +279,7 @@
       font-size: 36px;
     }
 
-    /* ── HAND RAISE BADGE (on tile) ──────────────── */
+    /* -- HAND RAISE BADGE (on tile) ---------------- */
     .tile-hand {
       position: absolute;
       top: 9px;
@@ -305,7 +305,7 @@
       }
     }
 
-    /* ── HAND TOAST (top-right notif) ───────────── */
+    /* -- HAND TOAST (top-right notif) ------------- */
     #hand-notify {
       position: fixed;
       top: 18px;
@@ -328,7 +328,7 @@
       transform: translateY(0);
     }
 
-    /* ── RECORDING BUTTON & INDICATOR ─────────── */
+    /* -- RECORDING BUTTON & INDICATOR ----------- */
     @keyframes rec-pulse {
 
       0%,
@@ -369,7 +369,7 @@
       display: flex;
     }
 
-    /* ── CHAT PANEL ──────────────────────────────── */
+    /* -- CHAT PANEL -------------------------------- */
     #chat-panel {
       position: fixed;
       right: 0;
@@ -521,7 +521,7 @@
       display: flex;
     }
 
-    /* ── WHITEBOARD PANEL ────────────────────────── */
+    /* -- WHITEBOARD PANEL -------------------------- */
     #whiteboard-panel {
       display: none;
       flex-direction: column;
@@ -647,9 +647,9 @@
 <body>
   <div id="app">
 
-    <!-- ══════════════════════════════════════════════
+    <!-- ----------------------------------------------
          VIDEO GRID
-         ══════════════════════════════════════════════ -->
+         ---------------------------------------------- -->
     <div id="video-grid">
       <div id="empty-msg">
         <span>📡</span>
@@ -681,11 +681,11 @@
       </div>
     </div>
 
-    <!-- ══════════════════════════════════════════════
+    <!-- ----------------------------------------------
          CONTROLS
          All actions route through LiveKit SDK methods.
          opentok-layout is called after any tile change.
-         ══════════════════════════════════════════════ -->
+         ---------------------------------------------- -->
     <div id="controls">
       <button class="ctrl-btn" id="mic-btn" title="Toggle mic" onclick="toggleMic()">🎤</button>
       <button class="ctrl-btn" id="cam-btn" title="Toggle camera" onclick="toggleCam()">📹</button>
@@ -728,17 +728,17 @@
 
   <script>
 
-    /* ════════════════════════════════════════════════════════════════════════════ */
+    /* ---------------------------------------------------------------------------- */
     const LK = window.LivekitClient;  // LiveKit namespace
 
-    // ── State ────────────────────────────────────────────────────────────────
+    // -- State ----------------------------------------------------------------
     let room = null;   // LiveKit Room instance
     let layout = null;   // opentok-layout instance
 
-    // ════════════════════════════════════════════════════════════════════════════
+    // ----------------------------------------------------------------------------
     // 1. LAYOUT MANAGER  (opentok-layout-js)
     //    Initialised once, called whenever tiles are added / removed / resized.
-    // ════════════════════════════════════════════════════════════════════════════
+    // ----------------------------------------------------------------------------
     function initLayout() {
       if (typeof initLayoutContainer !== 'function') {
         console.error(
@@ -770,9 +770,9 @@
       if (layout) layout.layout();
     }
 
-    // ════════════════════════════════════════════════════════════════════════════
+    // ----------------------------------------------------------------------------
     // 2. TILE MANAGEMENT
-    // ════════════════════════════════════════════════════════════════════════════
+    // ----------------------------------------------------------------------------
 
     /** Create or return the tile <div> for a given id. */
     function getOrCreateTile(tileId, label, isBig, isLocal) {
@@ -838,13 +838,13 @@
       reflow();
     }
 
-    // ════════════════════════════════════════════════════════════════════════════
+    // ----------------------------------------------------------------------------
     // 3. LIVEKIT — ROOM EVENTS
     //    LiveKit tells us when tracks appear/disappear; we update tiles & reflow.
-    // ════════════════════════════════════════════════════════════════════════════
+    // ----------------------------------------------------------------------------
 
     function bindRoomEvents() {
-      // ── Remote track subscribed ──────────────────────────────────────────
+      // -- Remote track subscribed ------------------------------------------
       room.on(LK.RoomEvent.TrackSubscribed, (track, publication, participant) => {
         if (track.kind === LK.Track.Kind.Video) {
           const isScreen = publication.source === LK.Track.Source.ScreenShare;
@@ -863,7 +863,7 @@
         }
       });
 
-      // ── Remote track unsubscribed ────────────────────────────────────────
+      // -- Remote track unsubscribed ----------------------------------------
       room.on(LK.RoomEvent.TrackUnsubscribed, (track, publication, participant) => {
         if (track.kind === LK.Track.Kind.Video) {
           const isScreen = publication.source === LK.Track.Source.ScreenShare;
@@ -874,7 +874,7 @@
         }
       });
 
-      // ── Local screen-share stopped (e.g. user hit browser's "Stop sharing") ──
+      // -- Local screen-share stopped (e.g. user hit browser's "Stop sharing") --
       room.on(LK.RoomEvent.LocalTrackUnpublished, (publication) => {
         if (publication.source === LK.Track.Source.ScreenShare) {
           removeTile(`tile-screen-${room.localParticipant.identity}`);
@@ -882,13 +882,13 @@
         }
       });
 
-      // ── Participant left ─────────────────────────────────────────────────
+      // -- Participant left -------------------------------------------------
       room.on(LK.RoomEvent.ParticipantDisconnected, (participant) => {
         removeTile(`tile-cam-${participant.identity}`);
         removeTile(`tile-screen-${participant.identity}`);
       });
 
-      // ── Mute state changed ───────────────────────────────────────────────
+      // -- Mute state changed -----------------------------------------------
       room.on(LK.RoomEvent.TrackMuted, (publication, participant) => {
         if (publication.kind === LK.Track.Kind.Audio) {
           const badge = document.getElementById(`muted-tile-cam-${participant.identity}`);
@@ -903,7 +903,7 @@
         }
       });
 
-      // ── DataChannel: Chat + Hand Raise + Recording ────────────────────────────────
+      // -- DataChannel: Chat + Hand Raise + Recording --------------------------------
       room.on(LK.RoomEvent.DataReceived, (data, participant) => {
         try {
           const msg = JSON.parse(new TextDecoder().decode(data));
@@ -945,7 +945,7 @@
             }
           }
 
-          // ── Recording status notification ──────────────
+          // -- Recording status notification --------------
           if (msg.type === 'rec_status') {
             const indicator = document.getElementById('rec-indicator');
             indicator.classList.toggle('show', msg.recording);
@@ -955,9 +955,9 @@
       });
     }
 
-    // ════════════════════════════════════════════════════════════════════════════
+    // ----------------------------------------------------------------------------
     // 4. LIVEKIT — CONNECT & PUBLISH LOCAL TRACKS
-    // ════════════════════════════════════════════════════════════════════════════
+    // ----------------------------------------------------------------------------
 
     async function connectAndPublish() {
       const token = localStorage.getItem('openvidu_token');
@@ -971,12 +971,12 @@
         adaptiveStream: true,   // auto-downscale for slow networks
         dynacast: true,   // only send layers that are subscribed
 
-        // ── VIDEO capture settings ────────────────────────────────
+        // -- VIDEO capture settings --------------------------------
         videoCaptureDefaults: {
           resolution: LK.VideoPresets.h1080.resolution,  // capture at 1080p
         },
 
-        // ── AUDIO capture settings ────────────────────────────────
+        // -- AUDIO capture settings --------------------------------
         audioCaptureDefaults: {
           autoGainControl: true,   // normalize volume levels
           echoCancellation: true,   // remove speaker echo
@@ -984,20 +984,12 @@
           sampleRate: 48000,  // 48kHz (CD quality)
         },
 
-        // ── PUBLISH defaults ──────────────────────────────────────
+        // -- PUBLISH defaults --------------------------------------
         publishDefaults: {
           // Video
           videoSimulcast: true,                             // send 3 quality layers
           videoCodec: 'h264',                           // H264: better quality at lower bitrate than VP8
-          videoEncoding: {
-            maxBitrate: 2_500_000,   // 2.5 Mbps max for 1080p
-            maxFramerate: 30,
-          },
-          simulcastLayers: [
-            { width: 320, height: 180, encoding: { maxBitrate: 150_000, maxFramerate: 15 } },  // low
-            { width: 640, height: 360, encoding: { maxBitrate: 500_000, maxFramerate: 24 } },  // mid
-            { width: 1280, height: 720, encoding: { maxBitrate: 1_200_000, maxFramerate: 30 } }, // high
-          ],
+          videoEncoding: LK.VideoPresets.h1080.encoding,
           // Audio
           audioPreset: {
             maxBitrate: 64_000,   // 64 kbps — clear voice, low bandwidth
@@ -1015,12 +1007,12 @@
         return;
       }
 
-      // ── Publish microphone (LiveKit manages audio, no tile needed) ──────
+      // -- Publish microphone (LiveKit manages audio, no tile needed) ------
       const wantMic = localStorage.getItem('vedu_mic_pref') !== 'false';
       await room.localParticipant.setMicrophoneEnabled(wantMic);
       document.getElementById('mic-btn').classList.toggle('off', !wantMic);
 
-      // ── Publish camera & create local video tile ────────────────────────
+      // -- Publish camera & create local video tile ------------------------
       const wantCam = localStorage.getItem('vedu_cam_pref') !== 'false';
       if (wantCam) {
         await room.localParticipant.setCameraEnabled(true, {
@@ -1043,9 +1035,9 @@
       attachVideoTrack(pub.videoTrack, tileId);
     }
 
-    // ════════════════════════════════════════════════════════════════════════════
+    // ----------------------------------------------------------------------------
     // 5. CONTROLS  (call LiveKit SDK; then reflow layout as needed)
-    // ════════════════════════════════════════════════════════════════════════════
+    // ----------------------------------------------------------------------------
 
     async function toggleMic() {
       // LiveKit: flip mic state
@@ -1086,6 +1078,7 @@
       if (!isSharing) {
         // LiveKit: start screen share
         await room.localParticipant.setScreenShareEnabled(true, {
+          audio: true,
           resolution: LK.VideoPresets.h1080.resolution,
           contentHint: 'text',
         });
@@ -1130,7 +1123,7 @@
       window.location.href = '/';
     }
 
-    // ── Hand Raise ────────────────────────────────────────────────────────
+    // -- Hand Raise --------------------------------------------------------
     let handRaised = false;
 
     async function toggleHand() {
@@ -1154,7 +1147,7 @@
       );
     }
 
-    // ── Chat ─────────────────────────────────────────────────────────────
+    // -- Chat -------------------------------------------------------------
     let chatOpen = false;
     let unreadCount = 0;
 
@@ -1207,9 +1200,9 @@
       return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
-    // ════════════════════════════════════════════════════════════════════════════
+    //------------------------------------------------
     // 6. RECORDING (Teacher Only)
-    // ════════════════════════════════════════════════════════════════════════════
+    // ------------------------------------------
     const isTeacher = (localStorage.getItem('role') || '').toUpperCase() === 'TEACHER';
     let isRecording = false;
 
@@ -1276,9 +1269,9 @@
       }
     }
 
-    // ════════════════════════════════════════════════════════════════════════════
+    // -----------------------------------------------------------------------------
     // 7. WHITEBOARD
-    // ════════════════════════════════════════════════════════════════════════════
+    // -----------------------------------------------------------------------------
     let wbOpen = false;
     let wbTool = 'pencil';   // 'pencil' | 'eraser'
     let wbDrawing = false;
@@ -1317,7 +1310,7 @@
         return;
       }
 
-      // ── Teacher drawing events ──────────────────────────────────
+      // -- Teacher drawing events ----------------------------------
       function getPos(e) {
         const r = canvas.getBoundingClientRect();
         const src = e.touches ? e.touches[0] : e;
@@ -1480,9 +1473,9 @@
       }
     }
 
-    // ════════════════════════════════════════════════════════════════════════════
+    // ----------------------------------------------------------------------------
     // 8. BOOTSTRAP
-    // ════════════════════════════════════════════════════════════════════════════
+    // ----------------------------------------------------------------------------
 
     window.onresize = () => reflow();
 

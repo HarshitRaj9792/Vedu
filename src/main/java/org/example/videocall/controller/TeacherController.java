@@ -9,6 +9,9 @@ import org.example.videocall.repo.Schedules_repo;
 import org.example.videocall.repo.Teacher_repo;
 import org.example.videocall.service.TeacherService;
 import org.example.videocall.service.TokenService;
+import org.example.videocall.service.EmailService;
+import org.example.videocall.repo.Student_repo;
+import org.example.videocall.model.Student;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,6 +33,10 @@ public class TeacherController {
     private Teacher_repo teacherRepo;
     @Autowired
     private Schedules_repo schedulesRepo;
+    @Autowired
+    private Student_repo studentRepo;
+    @Autowired
+    private EmailService emailService;
 
     @PostMapping("/profile")
     public ResponseEntity<?> updateprofile(@RequestHeader("Authorization") String authHeader, @RequestBody Teacher teacherData){
@@ -68,8 +75,18 @@ public class TeacherController {
 
         try {
             Schedules saved = schedulesRepo.save(schedulesData);
+
+            // Fetch students linked to this course and class
+            List<Student> targetStudents = studentRepo.findByCourseIgnoreCaseAndStudentClassIgnoreCase(
+                    saved.getTopicCourse(), saved.getTopicClass());
+
+            // Fire and forget asynchronous email dispatch
+            emailService.sendClassNotification(saved, targetStudents);
+
             return ResponseEntity.ok(saved);
-        }catch (Exception e){return ResponseEntity.status(500).body("Database Error: "+e.getMessage());}
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Database Error: " + e.getMessage());
+        }
     }
 
     @GetMapping("/my-Schedule")

@@ -1,0 +1,9 @@
+log_level: info
+
+api_key: devkey
+api_secret: v3du_L1v3K1t_Secur3_Key_2026_01A!
+
+ws_url: ws://livekit:7880
+
+redis:
+  address: redis:6379

@@ -1,0 +1,8 @@
+:80 {
+    # LiveKit WebSocket — must come before the catch-all
+    reverse_proxy /rtc* livekit:7880
+    reverse_proxy /twirp* livekit:7880
+
+    # Spring Boot backend (serves HTML + REST API)
+    reverse_proxy /* vedu-backend:8080
+}

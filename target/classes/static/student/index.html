@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vedu | Student Dashboard</title>
+    <style>
+        /* Shared Liquid UI Base */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+        body {
+            background: linear-gradient(135deg, #dae9f6 0%, #a6c8e8 60%, #cbdff2 100%);
+            min-height: 100vh;
+            display: flex;
+            color: #1a365d;
+        }
+
+        /* NAVIGATION */
+        nav {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.4);
+            display: flex;
+            flex-direction: column;
+            padding: 30px 20px;
+            height: 100vh;
+            position: sticky;
+            top: 0;
+        }
+
+        .logo { font-size: 24px; font-weight: 800; margin-bottom: 50px; display: flex; align-items: center; gap: 10px; }
+
+        .nav-btn {
+            padding: 15px; margin-bottom: 10px; border-radius: 15px; cursor: pointer;
+            transition: 0.3s; display: flex; align-items: center; gap: 12px;
+            text-decoration: none; color: #1a365d; font-weight: 600;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: rgba(255, 255, 255, 0.4);
+            transform: translateX(5px);
+            color: #3c52ff;
+        }
+
+        /* MAIN CONTENT */
+        main { flex: 1; padding: 40px; overflow-y: auto; }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 30px;
+            padding: 30px; margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .glass-card:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.25); }
+
+        .liquid-text {
+            background: linear-gradient(135deg, #3c52ff, #7db1e0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+
+        /* PROGRESS UI */
+        .profile-complete { display: flex; align-items: center; gap: 20px; }
+        .progress-bar { flex: 1; height: 10px; background: rgba(255,255,255,0.3); border-radius: 5px; overflow: hidden; }
+        .progress-fill { width: 30%; height: 100%; background: #3c52ff; transition: 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+        /* FORM STYLES */
+        .join-grid { display: grid; grid-template-columns: 1fr auto; gap: 15px; margin-top: 20px; }
+        input, select, textarea {
+            padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.5);
+            background: rgba(255,255,255,0.3); outline: none; width: 100%; color: #1a365d;
+        }
+
+        .action-btn {
+            background: #3c52ff; color: white; padding: 12px 25px; border-radius: 12px;
+            border: none; font-weight: 700; cursor: pointer; transition: 0.3s;
+        }
+
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(60, 82, 255, 0.2); }
+
+        /* FLOATING DIALOG (MODAL) */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.1); backdrop-filter: blur(15px);
+            display: none; justify-content: center; align-items: center; z-index: 1000;
+        }
+
+        .floating-card {
+            width: 450px; border: 1px solid rgba(255, 255, 255, 0.8);
+            animation: floatIn 0.5s ease-out;
+            position: relative;
+        }
+
+        @keyframes floatIn {
+            from { transform: translateY(40px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .close-btn {
+            position: absolute; top: 20px; right: 25px; background: none; border: none;
+            font-size: 28px; color: #1a365d; cursor: pointer; opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="logo">💠 <span>Vedu</span></div>
+    <a href="#" class="nav-btn active">🏠 Student Home</a>
+    <a href="/student/schedulepage.html" class="nav-btn">📅 Class Schedule</a>
+    <a href="#" class="nav-btn">📝 Assignments</a>
+    <a href="#" class="nav-btn">⚙️ Settings</a>
+</nav>
+
+<main>
+    <section class="glass-card">
+        <h1 class="liquid-text" id="welcome-text">Welcome, Student</h1>
+        <p id="status-text">Complete your academic profile to sync with your teachers.</p>
+        <div class="profile-complete" style="margin-top: 15px;">
+            <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
+            <button class="action-btn" id="openModalBtn" style="margin: 0; padding: 8px 15px;">Update Profile</button>
+        </div>
+    </section>
+
+    <section class="glass-card">
+        <h2 class="liquid-text">Join Classroom</h2>
+        <p style="color: #5d7fa0; font-size: 14px;">Enter the Class ID provided by your teacher.</p>
+        <div class="join-grid">
+            <input type="text" id="class-id-input" placeholder="e.g. JAVA-202-SEC-B">
+            <button class="action-btn" onclick="joinClass()">Join Now</button>
+        </div>
+    </section>
+
+    <div id="update-modal" class="modal-overlay">
+        <div class="glass-card floating-card">
+            <button class="close-btn" id="closeModalBtn">&times;</button>
+            <h2 class="liquid-text">Academic Details</h2>
+            <form id="student-update-form" style="margin-top: 20px;">
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size: 12px; font-weight: 600;">Full Name</label>
+                    <input type="text" id="form-name" required>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size: 12px; font-weight: 600;">Course / Major</label>
+                    <input type="text" id="form-course" required>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size: 12px; font-weight: 600;">Class / Year</label>
+                    <input type="text" id="form-year" required>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size: 12px; font-weight: 600;">Roll Number</label>
+                    <input type="text" id="form-roll" required>
+                </div>
+                <button type="submit" class="action-btn" style="width: 100%;">Save & Sync Info</button>
+            </form>
+        </div>
+    </div>
+</main>
+
+<script>
+    const API_BASE = "/api/student";
+    const modal = document.getElementById('update-modal');
+    const openBtn = document.getElementById('openModalBtn');
+    const closeBtn = document.getElementById('closeModalBtn');
+    const updateForm = document.getElementById('student-update-form');
+
+    // --- Modal Control ---
+    openBtn.onclick = () => modal.style.display = 'flex';
+    closeBtn.onclick = () => modal.style.display = 'none';
+    window.onclick = (e) => { if (e.target == modal) modal.style.display = 'none'; }
+
+    // --- Join Logic ---
+    function joinClass() {
+        const classId = document.getElementById('class-id-input').value;
+        if(!classId) return alert("Please enter a Class ID");
+        window.location.href = `../lobby.html?room=${encodeURIComponent(classId)}&role=Student`;
+    }
+
+    // --- Profile Handlers ---
+
+    async function fetchProfile() {
+        try {
+            const response = await fetch(`${API_BASE}/me`, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('vedu_token')}` }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                if(data) {
+                    document.getElementById('welcome-text').innerText = `Welcome, ${data.fullName || 'Student'}`;
+                    document.getElementById('progress-fill').style.width = "100%";
+                    document.getElementById('status-text').innerText = `Course: ${data.course || 'Not set'} | Roll: ${data.rollNumber || 'Not set'} | Batch : ${data.studentClass}`;
+
+                    // Pre-fill modal
+                    document.getElementById('form-name').value = data.fullName || '';
+                    document.getElementById('form-course').value = data.course || '';
+                    document.getElementById('form-year').value = data.studentClass || '';
+                    document.getElementById('form-roll').value = data.rollNumber || '';
+                }
+            }
+        } catch (err) { console.error("Fetch error:", err); }
+    }
+
+    updateForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const payload = {
+            fullName: document.getElementById('form-name').value,
+            course: document.getElementById('form-course').value,
+            studentClass: document.getElementById('form-year').value,
+            rollNumber: document.getElementById('form-roll').value
+        };
+
+        try {
+            const res = await fetch(`${API_BASE}/profile`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('vedu_token')}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                alert("Profile Synced to Cloud!");
+                modal.style.display = 'none';
+                fetchProfile(); // Reload UI
+            } else {
+                alert("Update failed. Check backend.");
+            }
+        } catch (err) { alert("Server connection error."); }
+    };
+
+    window.onload = () =>{
+        if(!localStorage.getItem("vedu_token")){
+            window.Location.href ="/login.html"
+            return;
+        }
+        fetchProfile();
+    };
+
+
+</script>
+</body>
+</html>

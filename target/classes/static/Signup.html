@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vedu | Create Account</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #dae9f6 0%, #a6c8e8 60%, #cbdff2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* BACKGROUND ELEMENTS */
+        .bg-blob {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.6) 0%, transparent 70%);
+            filter: blur(80px);
+            z-index: -1;
+        }
+        .b1 { width: 600px; height: 600px; top: -200px; right: -100px; }
+        .b2 { width: 400px; height: 400px; bottom: -100px; left: -100px; background: rgba(60, 82, 255, 0.2); }
+
+        /* SIGN UP CARD */
+        .signup-card {
+            width: 100%;
+            max-width: 500px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 40px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.05);
+            animation: liquidEntry 1s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+            position: relative;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+
+        /* Exit Animation Class */
+        .page-exit {
+            transform: scale(0.9) translateY(20px) !important;
+            opacity: 0 !important;
+            filter: blur(10px);
+        }
+
+        /* BACK BUTTON UI */
+        .back-btn {
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #1a365d;
+            text-decoration: none;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: translateX(-5px);
+            border-color: #3c52ff;
+        }
+
+        @keyframes liquidEntry {
+            0% { opacity: 0; transform: scale(0.95) translateY(20px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .header { text-align: center; margin-bottom: 30px; margin-top: 10px; }
+        .header h2 { color: #fff; font-size: 28px; font-weight: 400; }
+        .header p { color: #5d7fa0; font-size: 14px; margin-top: 5px; }
+
+        .input-group { margin-bottom: 15px; position: relative; width: 100%; }
+
+        input {
+            width: 100%;
+            padding: 14px 20px;
+            background: rgba(255, 255, 255, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 18px;
+            outline: none;
+            color: #1a365d;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus { background: rgba(255, 255, 255, 0.45); border-color: #3c52ff; }
+
+        .custom-dropdown { position: relative; cursor: pointer; user-select: none; }
+        .dropdown-selected {
+            width: 100%; padding: 14px 20px;
+            background: rgba(255, 255, 255, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 18px; color: #5d7fa0; font-size: 14px;
+            display: flex; justify-content: space-between; align-items: center;
+            transition: 0.3s;
+        }
+
+        .custom-dropdown.active .dropdown-selected {
+            border-radius: 18px 18px 0 0; background: rgba(255, 255, 255, 0.45); border-color: #3c52ff;
+        }
+
+        .dropdown-options {
+            position: absolute; top: 100%; left: 0; right: 0;
+            background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(25px);
+            border: 1px solid #3c52ff; border-top: none; border-radius: 0 0 18px 18px;
+            overflow: hidden; display: none; z-index: 10;
+        }
+
+        .custom-dropdown.active .dropdown-options { display: block; animation: fadeIn 0.3s ease; }
+        .option { padding: 12px 20px; color: #1a365d; font-size: 14px; transition: 0.2s; }
+        .option:hover { background: rgba(60, 82, 255, 0.2); }
+
+        .pass-wrapper { position: relative; }
+        .eye-icon {
+            position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
+            cursor: pointer; width: 20px; height: 20px; opacity: 0.5;
+            display: flex; align-items: center; justify-content: center; color: #1a365d;
+        }
+
+        .signup-btn {
+            width: 100%; padding: 16px; background: #3c52ff; color: white;
+            border: none; border-radius: 20px; font-weight: 700; cursor: pointer; transition: 0.3s;
+        }
+
+        .signup-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(60, 82, 255, 0.3); }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .full-width { grid-column: span 2; }
+        .footer { text-align: center; margin-top: 25px; font-size: 14px; color: #5d7fa0; }
+        .footer a { color: #3c52ff; text-decoration: none; font-weight: 700; }
+    </style>
+</head>
+<body>
+
+<div class="bg-blob b1"></div>
+<div class="bg-blob b2"></div>
+
+<div class="signup-card" id="signupCard">
+    <div class="back-btn" id="smoothBackBtn" title="Go Back">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+    </div>
+
+    <div class="header">
+        <div style="font-size: 32px; margin-bottom: 10px;">💠</div>
+        <h2>Create Account</h2>
+        <p>Join the Vedu community</p>
+    </div>
+
+    <form id="signupForm">
+        <div class="form-grid">
+            <div class="input-group full-width">
+                <input type="text" id="fullName" placeholder="Full Name" required>
+            </div>
+
+            <div class="input-group full-width">
+                <input type="email" placeholder="Email Address" required>
+            </div>
+
+            <div class="input-group pass-wrapper">
+                <input type="password" placeholder="Password" id="pass1" required>
+                <div class="eye-icon" onclick="togglePass('pass1', this)">👁️</div>
+            </div>
+
+            <div class="input-group pass-wrapper">
+                <input type="password" placeholder="Confirm" id="pass2" required>
+                <div class="eye-icon" onclick="togglePass('pass2', this)">👁️</div>
+            </div>
+
+            <div class="input-group full-width">
+                <div class="custom-dropdown" id="userTypeDropdown">
+                    <div class="dropdown-selected" id="selectedText">
+                        Register as...
+                        <span>▼</span>
+                    </div>
+                    <div class="dropdown-options">
+                        <div class="option" data-value="student">👨‍🎓 Student</div>
+                        <div class="option" data-value="teacher">👨‍🏫 Teacher</div>
+                    </div>
+                </div>
+                <input type="hidden" name="user_type" id="userTypeInput">
+            </div>
+
+            <div class="input-group full-width">
+                <button type="submit" class="signup-btn">Get Started</button>
+            </div>
+        </div>
+    </form>
+
+    <div class="footer">
+        Already have an account? <a href="#">Sign In</a>
+    </div>
+</div>
+
+<script>
+    // Smooth Back Button Logic
+    document.getElementById('smoothBackBtn').addEventListener('click', () => {
+        document.getElementById('signupCard').classList.add('page-exit');
+        setTimeout(() => { window.history.back(); }, 500);
+    });
+
+    // Dropdown Logic
+    const dropdown = document.getElementById('userTypeDropdown');
+    const selectedText = document.getElementById('selectedText');
+    const userTypeInput = document.getElementById('userTypeInput');
+
+    dropdown.addEventListener('click', () => { dropdown.classList.toggle('active'); });
+
+    document.querySelectorAll('.option').forEach(opt => {
+        opt.addEventListener('click', (e) => {
+            const value = e.target.getAttribute('data-value');
+            selectedText.innerText = e.target.innerText;
+            selectedText.style.color = '#1a365d';
+            userTypeInput.value = value;
+            dropdown.classList.remove('active');
+            e.stopPropagation();
+        });
+    });
+
+    // Password Toggle
+    function togglePass(id, el) {
+        const input = document.getElementById(id);
+        if (input.type === "password") {
+            input.type = "text"; el.innerText = "🔒";
+        } else {
+            input.type = "password"; el.innerText = "👁️";
+        }
+    }
+
+    // --- Signup Logic ---
+    const signupForm = document.getElementById('signupForm');
+
+    signupForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const user = {
+            fullName: document.getElementById('fullName').value,
+            email: document.querySelector('input[type="email"]').value,
+            password: document.getElementById('pass1').value,
+            userType: document.getElementById('userTypeInput').value
+        };
+
+        const confirmPass = document.getElementById('pass2').value;
+        if (user.password !== confirmPass) {
+            alert("Passwords do not match!");
+            return;
+        }
+
+        if(!user.userType) {
+            alert("Please select a user type (Student or Teacher)");
+            return;
+        }
+
+        await handlesignup(user);
+        console.log(user);
+        
+    });
+
+    async function handlesignup(user) {
+        try {
+            const response = await fetch('/api/auth/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(user)
+
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                alert("Signup successful: " + data.message);
+                window.location.href = "login.html";
+            } else {
+                alert("Signup failed: " + data.error()+"-"+data.details);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+</script>
+</body>
+</html>

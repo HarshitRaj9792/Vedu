@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vedu | Teacher Dashboard</title>
+  <style>
+    /* Shared Liquid UI Base */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #dae9f6 0%, #a6c8e8 60%, #cbdff2 100%);
+      min-height: 100vh;
+      display: flex;
+      color: #1a365d;
+    }
+
+    /* NAVIGATION */
+    nav {
+      width: 280px;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(20px);
+      border-right: 1px solid rgba(255, 255, 255, 0.4);
+      display: flex;
+      flex-direction: column;
+      padding: 30px 20px;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 50px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-btn {
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 15px;
+      cursor: pointer;
+      transition: 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: #1a365d;
+      font-weight: 600;
+    }
+
+    .nav-btn:hover,
+    .nav-btn.active {
+      background: rgba(255, 255, 255, 0.4);
+      transform: translateX(5px);
+      color: #3c52ff;
+    }
+
+    /* MAIN CONTENT */
+    main {
+      flex: 1;
+      padding: 40px;
+      overflow-y: auto;
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(25px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 30px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+    }
+
+    .liquid-text {
+      background: linear-gradient(135deg, #3c52ff, #7db1e0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 800;
+    }
+
+    /* PROFILE PROGRESS */
+    .profile-complete {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .progress-bar {
+      flex: 1;
+      height: 10px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      background: #3c52ff;
+      transition: 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    /* FORM STYLES */
+    .schedule-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    input,
+    select,
+    textarea {
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      background: rgba(255, 255, 255, 0.3);
+      outline: none;
+      width: 100%;
+      color: #1a365d;
+    }
+
+    .action-btn {
+      background: #3c52ff;
+      color: white;
+      padding: 12px 25px;
+      border-radius: 12px;
+      border: none;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: 0.3s;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(60, 82, 255, 0.2);
+    }
+
+    /* FLOATING MODAL */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.05);
+      backdrop-filter: blur(15px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .floating-card {
+      width: 450px;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      animation: floatIn 0.5s ease-out;
+    }
+
+    @keyframes floatIn {
+      from {
+        transform: translateY(40px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 20px;
+      right: 25px;
+      background: none;
+      border: none;
+      font-size: 28px;
+      color: #1a365d;
+      cursor: pointer;
+      opacity: 0.5;
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav>
+    <div class="logo">💠 <span>Vedu</span></div>
+    <a href="#" class="nav-btn active">🏠 Home Dashboard</a>
+    <a href="/teacher/class_create.html" class="nav-btn">📹 Start/Create Class</a>
+    <a href="/teacher/tec_course.html" class="nav-btn">📚 My Courses</a>
+    <a href="/teacher/analyitics.html" class="nav-btn">📊 Student Analytics</a>
+    <a href="/teacher/tech_settings.html" class="nav-btn">⚙️ Settings</a>
+  </nav>
+
+  <main>
+    <section class="glass-card">
+      <h1 class="liquid-text" id="welcome-text">Welcome, Teacher</h1>
+      <p id="status-text">Your profile is incomplete. Help students find you!</p>
+      <div class="profile-complete" style="margin-top: 15px;">
+        <div class="progress-bar">
+          <div id="progress-fill" class="progress-fill"></div>
+        </div>
+        <button class="action-btn" id="openModalBtn" style="margin: 0; padding: 8px 15px;">Update Info</button>
+      </div>
+    </section>
+
+    <section class="glass-card">
+      <h2 class="liquid-text">Schedule Future Classes</h2>
+      <div class="schedule-grid">
+        <div><label>Topic</label><input id="Topic_in" type="text" placeholder="e.g. Java Microservices"></div>
+        <div><label>Date & Time</label><input id="Topic_time" type="datetime-local"></div>
+        <div><label>Course</label><input id="Topic_course" type="text" placeholder="e.g. BCA"></div>
+        <div><label>Class</label><input type="text" id="Topic_class" placeholder="e.g. B1"></div>
+      </div>
+      <button class="action-btn" onclick="saveSchedule()">📅 Save Schedule</button>
+    </section>
+
+    <div id="update-modal" class="modal-overlay">
+      <div class="glass-card floating-card">
+        <button class="close-btn" id="closeModalBtn">&times;</button>
+        <h2 class="liquid-text">Update Profile</h2>
+        <form id="teacher-update-form" style="margin-top: 20px;">
+          <div style="margin-bottom: 15px;">
+            <label style="font-size: 12px; font-weight: 600;">Full Name</label>
+            <input type="text" id="form-name" required>
+          </div>
+          <div style="margin-bottom: 15px;">
+            <label style="font-size: 12px; font-weight: 600;">Specialization</label>
+            <input type="text" id="form-spec" required>
+          </div>
+          <div style="margin-bottom: 15px;">
+            <label style="font-size: 12px; font-weight: 600;">Employee ID</label>
+            <input type="text" id="form-eid" required>
+          </div>
+          <div style="margin-bottom: 15px;">
+            <label style="font-size: 12px; font-weight: 600;">Bio</label>
+            <textarea id="form-bio"></textarea>
+          </div>
+          <button type="submit" class="action-btn" id="save-btn" style="width: 100%;">Save to Server</button>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const API_BASE = "/api/teachers";
+    const modal = document.getElementById('update-modal');
+    const openBtn = document.getElementById('openModalBtn');
+    const closeBtn = document.getElementById('closeModalBtn');
+    const updateForm = document.getElementById('teacher-update-form');
+    const progressFill = document.getElementById('progress-fill');
+
+    // --- Modal Logic ---
+    openBtn.onclick = () => modal.style.display = 'flex';
+    closeBtn.onclick = () => modal.style.display = 'none';
+
+    // --- API Handlers ---
+
+    // ..saving class...//
+    async function saveSchedule() {
+
+      const payload = {
+        topicName: document.getElementById("Topic_in").value,
+        topicCourse: document.getElementById("Topic_course").value,
+        topicClass: document.getElementById("Topic_class").value,
+        topicTime: document.getElementById("Topic_time").value,
+      }
+      const token = localStorage.getItem("vedu_token");
+      if (!token) return;
+      try {
+        const response = await fetch(`${API_BASE}/saveSchedule`, {
+          method: 'POST',
+          headers: {
+            'Content-type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          }
+          , body: JSON.stringify(payload)
+        });
+        if (response.ok) {
+          console.log("ok");
+          alert("class successfully saved");
+        } else {
+          console.log("no");
+          alert("class not saved successfully");
+        }
+      } catch (error) {
+        console.log("Schedule: ", error);
+      }
+    }
+
+    // 1. Fetch data from Java Backend on load
+    async function fetchProfile() {
+      const token = localStorage.getItem('vedu_token');
+      if (!token) return;
+
+      try {
+        const response = await fetch(`${API_BASE}/me`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+          // response.status 204 means no record found yet
+          if (response.status === 204) return;
+
+          const data = await response.json();
+          if (data) {
+            updateUI(data);
+            // Pre-fill form
+            document.getElementById('form-name').value = data.fullName || '';
+            document.getElementById('form-spec').value = data.specialization || '';
+            document.getElementById('form-eid').value = data.employeeId || '';
+            document.getElementById('form-bio').value = data.description || ''; // Matches Java Entity
+          }
+        }
+      } catch (err) { console.error("Fetch error:", err); }
+    }
+
+    function updateUI(data) {
+      document.getElementById('welcome-text').innerText = `Welcome, ${data.fullName || 'Teacher'}`;
+      document.getElementById('status-text').innerText = `Specialization: ${data.specialization || 'Not set'}`;
+      progressFill.style.width = "100%";
+    }
+
+    // 2. Submit data to Java Backend (Upsert)
+    updateForm.onsubmit = async (e) => {
+      e.preventDefault();
+      const saveBtn = document.getElementById('save-btn');
+      saveBtn.innerText = "Syncing...";
+      saveBtn.disabled = true;
+
+      const payload = {
+        fullName: document.getElementById('form-name').value,
+        specialization: document.getElementById('form-spec').value,
+        employeeId: document.getElementById('form-eid').value,
+        description: document.getElementById('form-bio').value
+      };
+
+      try {
+        const res = await fetch(`${API_BASE}/profile`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('vedu_token')}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          alert("Profile Synced successfully!");
+          modal.style.display = 'none';
+          await fetchProfile(); // Refresh the main dashboard UI
+        } else {
+          alert("Update failed. Check your Backend connection.");
+        }
+      } catch (err) {
+        alert("Server connection error. Is Spring Boot running?");
+      } finally {
+        saveBtn.innerText = "Save to Server";
+        saveBtn.disabled = false;
+      }
+    };
+
+    window.onload = () => {
+      // Check if user is logged in
+      if (!localStorage.getItem("vedu_token")) {
+        window.location.href = "/login.html";
+        return;
+      }
+      fetchProfile();
+    };
+  </script>
+</body>
+
+</html>

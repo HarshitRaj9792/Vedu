@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vedu | Start Classroom</title>
+    <style>
+        /* Shared Liquid UI Base */
+        body {
+            background: linear-gradient(135deg, #dae9f6 0%, #a6c8e8 60%, #cbdff2 100%);
+            height: 100vh; display: flex; align-items: center; justify-content: center;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 30px; padding: 40px; width: 400px; text-align: center;
+        }
+        .liquid-btn {
+            background: #3c52ff; color: white; border: none; padding: 15px;
+            border-radius: 15px; width: 100%; font-weight: bold; cursor: pointer;
+            margin-top: 20px; transition: 0.3s;
+        }
+        .liquid-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(60, 82, 255, 0.2); }
+        input {
+            width: 100%; padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.5);
+            background: rgba(255,255,255,0.3); margin-top: 10px; outline: none;
+        }
+    </style>
+</head>
+<body>
+<div class="glass-card">
+    <h2 style="color: #1a365d;">Initialize Class</h2>
+    <p style="font-size: 14px; color: #5d7fa0;">Create a virtual space for your students</p>
+
+    <div style="text-align: left; margin-top: 20px;">
+        <label style="font-weight: 600; font-size: 13px;">Classroom Name</label>
+        <input type="text" id="className" placeholder="e.g. Data Structures 101">
+    </div>
+
+    <button class="liquid-btn" onclick="hostClassroom()">🚀 Start Classroom</button>
+    <a href="dashboard.html" style="display:block; margin-top:15px; font-size:12px; color:#3c52ff; text-decoration:none;">Cancel</a>
+</div>
+
+<script>
+
+    async function hostClassroom() {
+        const className = document.getElementById('className').value;
+        const veduToken = localStorage.getItem("vedu_token"); // Your login JWT
+
+        if (!className) return alert("Please name your classroom");
+
+        // We no longer call /api/meetings/host because we merged it into /token
+        // We redirect to the lobby first so the teacher can check their cam/mic
+        // The lobby will be the one to actually "generate" the LiveKit token
+
+        if (veduToken) {
+            // Redirect to common lobby with the room name and role
+            // The lobby will handle the rest!
+            window.location.href = `../lobby.html?room=${encodeURIComponent(className)}&role=Teacher`;
+        } else {
+            alert("Session expired. Please login again.");
+            window.location.href = "/login.html";
+        }
+    }
+</script>
+</body>
+</html>

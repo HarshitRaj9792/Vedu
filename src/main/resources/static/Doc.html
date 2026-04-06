@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vedu | Full Documentation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #3c52ff; --bg: #0f172a; --glass: rgba(255, 255, 255, 0.05); }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: var(--bg); color: white; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        #progress { position: fixed; top: 0; left: 0; height: 4px; background: var(--primary); width: 0%; z-index: 1000; }
+        footer {text-align: right}
+        section { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 80px 20px; opacity: 0; transform: translateY(50px); transition: 0.8s ease-out; }
+        section.visible { opacity: 1; transform: translateY(0); }
+
+        .content-box { max-width: 1000px; width: 100%; background: var(--glass); backdrop-filter: blur(20px); padding: 50px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 25px 50px rgba(0,0,0,0.3); }
+        h1, h2 { color: var(--primary); margin-bottom: 20px; }
+        h3 { color: #fff; margin: 20px 0 10px 0; border-left: 4px solid var(--primary); padding-left: 10px; }
+        p, li { line-height: 1.6; color: #94a3b8; margin-bottom: 15px; font-size: 15px; }
+        .diagram-placeholder { background: rgba(0,0,0,0.3); border: 2px dashed #334155; padding: 40px; text-align: center; border-radius: 20px; margin: 20px 0; color: var(--primary); font-weight: bold; overflow: hidden; }
+        .diagram-placeholder img{max-width:100%;height: auto; display:inline-block ;}    
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 20px; background: rgba(0,0,0,0.2); border-radius: 10px; overflow: hidden; }
+        .data-table td, .data-table th { padding: 15px; border-bottom: 1px solid #334155; text-align: left; }
+        .data-table th { background: rgba(60, 82, 255, 0.1); color: white; }
+
+        .floating-nav { position: fixed; left: 30px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 15px; z-index: 100; }
+        .nav-dot { width: 12px; height: 12px; border: 2px solid white; border-radius: 50%; cursor: pointer; transition: 0.3s; }
+        .nav-dot.active { background: var(--primary); border-color: var(--primary); transform: scale(1.3); }
+    </style>
+</head>
+<body>
+
+<div id="progress"></div>
+<div class="floating-nav" id="dots"></div>
+
+<section id="s1">
+    <div class="content-box">
+        <span style="font-size: 50px;">💠</span>
+        <h1>Project Title</h1>
+        <h2 style="color: white; font-size: 45px;">VEDU</h2>
+        <p>A Liquid-UI Based Real-Time Collaborative Virtual Classroom Platform for 2026 Pedagogy.</p>
+        <footer><h4>By Harshit Raj</h4>
+                <h5>BCA 3rd Year</h5>
+                <h5>B1 Roll: b-10</h5>
+
+        </footer>
+    </div>
+</section>
+
+<section id="s2">
+    <div class="content-box">
+        <h2>02. Introduction & Objectives</h2>
+        <h3>Introduction</h3>
+        <p>Vedu solves the "Zoom Fatigue" problem of limited time meet and specialized classroom management. It bridges the gap between static LMS and chaotic video calls.</p>
+        <h3>Objectives</h3>
+        <ul>
+            <li><strong>Latency Control:</strong> Keep WebRTC sub-300ms.</li>
+            <li><strong>Role-Based UX:</strong> Distinct dashboards for Teachers (Moderation) and Students (Learning).</li>
+            <li><strong>Persistence:</strong> Automatic attendance and recording to Supabase Storage.</li>
+        </ul>
+    </div>
+</section>
+
+<section id="s3">
+    <div class="content-box">
+        <h2>03. System Requirement Specification (SRS)</h2>
+        <div class="grid-2">
+            <div>
+                <h3>Software Stack</h3>
+                <p><strong>Backend:</strong> Java 17, Spring Boot 3.2.x<br>
+                    <strong>Database:</strong> PostgreSQL via Supabase<br>
+                    <strong>Media Server:</strong> LiveKit / OpenVidu v3<br>
+                    <strong>Frontend:</strong> JavaScript (ES6), HTML5/CSS3</p>
+            </div>
+            <div>
+                <h3>Hardware Baseline</h3>
+                <p><strong>Min Server:</strong> 4GB RAM, 2vCPU (For signaling)<br>
+                    <strong>Client Bandwidth:</strong> 2.5 Mbps (720p Video)<br>
+                    <strong>SSL:</strong> Required for WebRTC WSS</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="s4">
+    <div class="content-box">
+        <h2>04. Process Logic</h2>
+        <p>The system utilizes a <strong>Service-Oriented Architecture (SOA)</strong>.</p>
+
+        <h3>Connection Handshake</h3>
+        <p>1. Client signs in via Supabase Auth.<br>
+            2. Client hits Spring Boot `/api/meetings/token` with Room Name.<br>
+            3. Spring Boot verifies roles and requests Token from LiveKit.<br>
+            4. Client uses JWT to open a WebSocket (WSS) to the Media Server.</p>
+    </div>
+</section>
+
+<section id="s5">
+    <div class="content-box">
+        <h2>05. Development Timeline (Gantt Chart)</h2>
+        <p>A 12-week iterative development cycle (SDLC - Agile).</p>
+        <table class="data-table">
+            <tr><th>Phase</th><th>Weeks</th><th>Deliverable</th></tr>
+            <tr><td>Requirement Analysis</td><td>1-2</td><td>SRS Document</td></tr>
+            <tr><td>Backend Dev (Spring/Auth)</td><td>3-5</td><td>REST APIs & Supabase Integration</td></tr>
+            <tr><td>RTC Integration (LiveKit)</td><td>6-8</td><td>Signaling & Media Streams</td></tr>
+            <tr><td>Liquid UI Deployment</td><td>9-10</td><td>Responsive Dashboards</td></tr>
+            <tr><td>Testing & Optimization</td><td>11-12</td><td>Final Deployment & Manuals</td></tr>
+        </table>
+    </div>
+</section>
+
+<section id="s6">
+    <div class="content-box">
+        <h2>06. Data Dictionary</h2>
+        <table class="data-table">
+            <thead>
+            <tr><th>Attribute</th><th>Data Type</th><th>Description</th></tr>
+            </thead>
+            <tr><td>user_id</td><td>UUID</td><td>Primary Key from Auth.users</td></tr>
+            <tr><td>user_type</td><td>TEXT</td><td>Used for Storing Usertype</td></tr>
+            <tr><td>full_name</td><td>VARCHAR(100)</td><td>Displayed on Video Label</td></tr>
+            <tr><td>room_token</td><td>TEXT</td><td>Temporary LiveKit Session Token</td></tr>
+            <tr><td>access_token</td><td>TEXT</td><td>Temporary user Session Token</td></tr>
+            <tr><td>is_teacher</td><td>BOOLEAN</td><td>Role check for classroom controls</td></tr>
+        </table>
+    </div>
+</section>
+
+<section id="s7">
+    <div class="content-box">
+        <h2>07. Data Flow Diagram (DFD)</h2>
+        <p><strong>Level 0 DFD:</strong> Illustrates how the Participant data flows from the UI through the Spring Gateway to the Media Engine.</p>
+        <div class="diagram-placeholder">
+            <img src="assests/mermaid-diagram-2026-02-04-145559.png">
+            <br>
+            <span style="font-size: 12px; color: #94a3b8;">Flow: User -> Login API -> Room Token API -> Media Stream Engine</span>
+        </div>
+
+    </div>
+</section>
+
+<section id="s8">
+    <div class="content-box">
+        <h2>07. Data Flow Diagram (DFD)</h2>
+        <p><strong>Level 1 DFD:</strong> Illustrates how the Participant data flows from the UI through the Spring Gateway to the Media Engine.</p>
+        <div class="diagram-placeholder">
+            <img src="assests/mermaid-diagram-2026-02-04-145317.png">
+            <br>
+            <span style="font-size: 12px; color: #94a3b8;">Flow: User -> Login API -> Room Token API -> Media Stream Engine</span>
+        </div>
+
+    </div>
+</section>
+
+<section id="s9">
+    <div class="content-box">
+        <h2>08. Entity Relationship Diagram (ERD)</h2>
+        <p><strong>Schema Logic:</strong> One Teacher manages many Courses. One Course has many Sessions. Sessions generate multiple Attendance records.</p>
+        <div class="diagram-placeholder">
+            <img src="assests/mermaid-diagram-2026-02-04-144848.png" alt=""><br>
+            <span style="font-size: 12px; color: #94a3b8;">Entities: Users, Courses, Meetings, Attendance, Recordings</span>
+        </div>
+
+    </div>
+</section>
+
+<section id="s10">
+    <div class="content-box">
+        <h2>10. Expected Report Generation</h2>
+        <p>The system provides automated reporting for educational auditing:</p>
+        <ul>
+            <li><strong>Classroom Audit:</strong> Log of join/leave times for students.</li>
+            <li><strong>Participation Score:</strong> Tracking hand-raise frequency per student.</li>
+            <li><strong>Session Analytics:</strong> Aggregated attendance percentage for the semester.</li>
+        </ul>
+    </div>
+</section>
+
+<section id="s11">
+    <div class="content-box">
+        <h2>11 & 12. Future Scope & Bibliography</h2>
+        <h3>Future Scope</h3>
+        <p>1. <strong>AI Summaries:</strong> Integration of Gemini API to summarize lecture transcripts.<br>
+            2. <strong>Mobile App:</strong> Native iOS/Android apps using LiveKit Mobile SDK.<br>
+            3. <strong>Whiteboard:</strong> Real-time SVG canvas for collaborative math work.</p>
+        <h3>References</h3>
+        <p>• LiveKit.io Documentation (2025/26)<br>
+            • Spring Boot 3.2 Framework Guides<br>
+            • Supabase Realtime & Auth Documentation</p>
+    </div>
+</section>
+
+<script>
+    const sections = document.querySelectorAll('section');
+    const dotContainer = document.getElementById('dots');
+
+    sections.forEach((_, i) => {
+        const dot = document.createElement('div');
+        dot.className = 'nav-dot';
+        dot.addEventListener('click', () => { sections[i].scrollIntoView({ behavior: 'smooth' }); });
+        dotContainer.appendChild(dot);
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                const index = Array.from(sections).findIndex(s => s.id === entry.target.id);
+                document.querySelectorAll('.nav-dot').forEach((dot, i) => {
+                    dot.classList.toggle('active', i === index);
+                });
+            }
+        });
+    }, { threshold: 0.3 });
+
+    sections.forEach(s => observer.observe(s));
+
+    window.onscroll = () => {
+        const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+        const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const scrolled = (winScroll / height) * 100;
+        document.getElementById("progress").style.width = scrolled + "%";
+    };
+</script>
+</body>
+</html>

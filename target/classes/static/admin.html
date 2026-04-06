@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vedu Admin — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    :root {
+      --bg:        #070b14;
+      --surface:   #0e1525;
+      --surface2:  #141d30;
+      --border:    rgba(255,255,255,0.07);
+      --accent:    #4f6ef7;
+      --accent2:   #7b93ff;
+      --green:     #22c55e;
+      --yellow:    #f59e0b;
+      --red:       #ef4444;
+      --text:      #e2e8f0;
+      --muted:     #64748b;
+      --radius:    14px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── TOPBAR ─────────────────────────────── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 32px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .logo { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+    .logo span { color: var(--accent2); }
+    .header-right { display: flex; align-items: center; gap: 14px; }
+    #refresh-time { font-size: 12px; color: var(--muted); }
+    #status-dot {
+      width: 9px; height: 9px; border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity:1; }
+      50%      { opacity:0.4; }
+    }
+    .refresh-btn {
+      background: rgba(79,110,247,0.15);
+      border: 1px solid rgba(79,110,247,0.3);
+      color: var(--accent2); border-radius: 8px;
+      padding: 6px 14px; font-size:13px; cursor:pointer;
+      transition: background 0.2s;
+    }
+    .refresh-btn:hover { background: rgba(79,110,247,0.3); }
+
+    /* ── LAYOUT ─────────────────────────────── */
+    main { padding: 28px 32px; max-width: 1400px; margin: 0 auto; }
+
+    h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em;
+         color: var(--muted); margin-bottom: 16px; font-weight: 600; }
+
+    /* ── STAT CARDS ─────────────────────────── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      display: flex; flex-direction: column; gap: 8px;
+      position: relative; overflow: hidden;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .stat-card:hover { border-color: rgba(79,110,247,0.4); transform: translateY(-2px); }
+    .stat-card::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+    }
+    .stat-label { font-size: 12px; color: var(--muted); font-weight: 500;
+                  text-transform: uppercase; letter-spacing: 0.06em; }
+    .stat-value { font-size: 38px; font-weight: 700; line-height: 1;
+                  background: linear-gradient(135deg, #fff, var(--accent2));
+                  -webkit-background-clip: text; background-clip: text;
+                  -webkit-text-fill-color:transparent; }
+    .stat-sub   { font-size: 12px; color: var(--muted); }
+
+    /* ── SERVICE STATUS ─────────────────────── */
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px; margin-bottom: 32px;
+    }
+    .svc-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .svc-dot {
+      width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+    }
+    .svc-dot.up     { background: var(--green); box-shadow: 0 0 8px var(--green); }
+    .svc-dot.down   { background: var(--red);   box-shadow: 0 0 8px var(--red);   }
+    .svc-dot.warn   { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
+    .svc-name   { font-size: 13px; font-weight: 600; }
+    .svc-status { font-size: 11px; color: var(--muted); }
+
+    /* ── ROOMS TABLE ─────────────────────────── */
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: var(--surface2); }
+    thead th {
+      text-align: left;
+      padding: 13px 20px;
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+    tbody tr {
+      border-top: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+    tbody tr:hover { background: var(--surface2); }
+    tbody td { padding: 14px 20px; font-size: 14px; vertical-align: middle; }
+
+    .room-name  { font-weight: 600; font-size: 15px; }
+    .badge {
+      display: inline-block; padding: 3px 10px;
+      border-radius: 20px; font-size: 11px; font-weight: 600;
+    }
+    .badge-green { background: rgba(34,197,94,0.15); color: var(--green); }
+    .badge-red   { background: rgba(239,68,68,0.15);  color: var(--red); }
+    .badge-blue  { background: rgba(79,110,247,0.15); color: var(--accent2); }
+
+    .participants-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .p-chip {
+      background: rgba(79,110,247,0.12);
+      border: 1px solid rgba(79,110,247,0.2);
+      border-radius: 20px; padding: 2px 10px;
+      font-size: 12px; color: var(--accent2);
+    }
+
+    .btn-danger {
+      padding: 6px 14px; border: 1px solid rgba(239,68,68,0.4);
+      background: rgba(239,68,68,0.1); color: #ef4444;
+      border-radius: 8px; font-size: 12px; cursor:pointer;
+      transition: background 0.2s;
+    }
+    .btn-danger:hover { background: rgba(239,68,68,0.25); }
+
+    /* ── EMPTY STATE ─────────────────────────── */
+    .empty {
+      text-align: center; padding: 60px 20px;
+      color: var(--muted); font-size: 14px;
+    }
+    .empty span { font-size: 36px; display: block; margin-bottom: 12px; }
+
+    /* ── LOADING SHIMMER ─────────────────────── */
+    .shimmer {
+      background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 8px; height: 48px; margin: 12px 20px;
+    }
+    @keyframes shimmer { 0% { background-position: 200% } 100% { background-position: -200% } }
+
+    /* ── TOAST ───────────────────────────────── */
+    #toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 20px;
+      font-size: 13px; opacity: 0; transform: translateY(10px);
+      transition: opacity 0.3s, transform 0.3s;
+      pointer-events: none; z-index: 999;
+    }
+    #toast.show { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+<!-- Admin guard — redirect non-admins immediately -->
+<script>
+  const _role = (localStorage.getItem('role') || '').toLowerCase();
+  const _tok  = localStorage.getItem('vedu_token');
+  if (!_tok || _role !== 'admin') {
+    window.location.replace('/login.html');
+  }
+</script>
+
+<header>
+  <div class="logo">Vedu <span>Admin</span></div>
+  <div class="header-right">
+    <div id="status-dot" title="LiveKit connection"></div>
+    <span id="refresh-time">Refreshing…</span>
+    <button class="refresh-btn" onclick="loadDashboard()">⟳ Refresh</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- STAT CARDS -->
+  <h2>📊 Overview</h2>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Active Rooms</div>
+      <div class="stat-value" id="stat-rooms">—</div>
+      <div class="stat-sub">Live classrooms</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Online Participants</div>
+      <div class="stat-value" id="stat-users">—</div>
+      <div class="stat-sub">Across all rooms</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Recording</div>
+      <div class="stat-value" id="stat-rec">—</div>
+      <div class="stat-sub">Active egress sessions</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Server Status</div>
+      <div class="stat-value" id="stat-status" style="font-size:22px; padding-top:6px;">—</div>
+      <div class="stat-sub" id="stat-status-sub">Checking…</div>
+    </div>
+  </div>
+
+  <!-- SERVICE STATUS -->
+  <h2>🛠️ Services</h2>
+  <div class="services-grid">
+    <div class="svc-card">
+      <div class="svc-dot" id="dot-livekit"></div>
+      <div>
+        <div class="svc-name">LiveKit</div>
+        <div class="svc-status" id="lbl-livekit">Checking…</div>
+      </div>
+    </div>
+    <div class="svc-card">
+      <div class="svc-dot" id="dot-redis"></div>
+      <div>
+        <div class="svc-name">Redis</div>
+        <div class="svc-status" id="lbl-redis">State store</div>
+      </div>
+    </div>
+    <div class="svc-card">
+      <div class="svc-dot" id="dot-egress"></div>
+      <div>
+        <div class="svc-name">Egress</div>
+        <div class="svc-status" id="lbl-egress">Recording service</div>
+      </div>
+    </div>
+    <div class="svc-card">
+      <div class="svc-dot" id="dot-ingress"></div>
+      <div>
+        <div class="svc-name">Ingress</div>
+        <div class="svc-status" id="lbl-ingress">RTMP input</div>
+      </div>
+    </div>
+    <div class="svc-card">
+      <div class="svc-dot" id="dot-minio"></div>
+      <div>
+        <div class="svc-name">MinIO</div>
+        <div class="svc-status" id="lbl-minio">Object storage</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROOMS TABLE -->
+  <h2>🎓 Active Classrooms</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Room Name</th>
+          <th>Participants</th>
+          <th>Online Users</th>
+          <th>Recording</th>
+          <th>Created</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="rooms-tbody">
+        <tr><td colspan="6"><div class="shimmer"></div></td></tr>
+        <tr><td colspan="6"><div class="shimmer"></div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</main>
+
+<div id="toast"></div>
+
+<script>
+  let autoTimer = null;
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+
+  function toast(msg, color = '#4f6ef7') {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.style.borderColor = color;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 3000);
+  }
+
+  function setDot(id, state, label) {
+    const dot = document.getElementById('dot-' + id);
+    const lbl = document.getElementById('lbl-' + id);
+    dot.className = 'svc-dot ' + state;
+    if (lbl && label) lbl.textContent = label;
+  }
+
+  function setVal(id, val) {
+    document.getElementById(id).textContent = val;
+  }
+
+  function updateClock() {
+    const now = new Date().toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    document.getElementById('refresh-time').textContent = 'Last refresh: ' + now;
+  }
+
+  // ── Check external services ──────────────────────────────────────────────
+
+  async function checkService(url, dotId, upLabel, downLabel) {
+    try {
+      const res = await fetch(url, { method:'GET', signal: AbortSignal.timeout(3000) });
+      setDot(dotId, res.ok ? 'up' : 'warn', res.ok ? upLabel : 'Degraded');
+    } catch {
+      setDot(dotId, 'down', downLabel);
+    }
+  }
+
+  function checkExternalServices() {
+    // LiveKit health endpoint
+    checkService('http://localhost:7880', 'livekit', 'Running', 'Unreachable');
+    // MinIO health endpoint
+    checkService('http://localhost:9000/minio/health/live', 'minio', 'Running', 'Unreachable');
+    // Egress and Ingress — no public HTTP endpoint; mark as assumed up if LiveKit is up
+    // (they are sidecar processes — if LiveKit is up, they're likely up)
+    setDot('egress',  'warn', 'Sidecar (no HTTP probe)');
+    setDot('ingress', 'warn', 'RTMP :1935 (no HTTP probe)');
+    setDot('redis',   'warn', 'Internal (no HTTP probe)');
+  }
+
+  // ── Main dashboard load ───────────────────────────────────────────────────
+
+  async function loadDashboard() {
+    try {
+      const res  = await fetch('/api/admin/dashboard');
+      const data = await res.json();
+
+      const isOk      = data.status === 'ok';
+      const rooms     = data.rooms        || [];
+      const totalRec  = rooms.filter(r => r.activeRecording).length;
+
+      // Stat cards
+      setVal('stat-rooms',  data.totalRooms || 0);
+      setVal('stat-users',  data.totalParticipants || 0);
+      setVal('stat-rec',    totalRec);
+      setVal('stat-status', isOk ? '🟢 Online' : '🔴 Error');
+      setVal('stat-status-sub', isOk ? 'LiveKit reachable' : (data.error || 'Connection failed'));
+
+      // Service dots
+      setDot('livekit', isOk ? 'up' : 'down', isOk ? 'Running' : 'Unreachable');
+      checkExternalServices();
+
+      // Rooms table
+      const tbody = document.getElementById('rooms-tbody');
+      if (rooms.length === 0) {
+        tbody.innerHTML = `
+          <tr><td colspan="6">
+            <div class="empty">
+              <span>📭</span>
+              No active classrooms right now.
+            </div>
+          </td></tr>`;
+      } else {
+        tbody.innerHTML = rooms.map(room => {
+          const chips = (room.participantNames || [])
+            .map(n => `<span class="p-chip">${n}</span>`).join('') || '—';
+
+          const recBadge = room.activeRecording
+            ? '<span class="badge badge-red">● Recording</span>'
+            : '<span class="badge badge-green">Not recording</span>';
+
+          return `
+            <tr>
+              <td><div class="room-name">${room.name}</div></td>
+              <td><span class="badge badge-blue">${room.participants} online</span></td>
+              <td><div class="participants-list">${chips}</div></td>
+              <td>${recBadge}</td>
+              <td style="color:var(--muted);font-size:13px;">${room.createdAt}</td>
+              <td>
+                <button class="btn-danger" onclick="closeRoom('${room.name}')">
+                  ✕ Close
+                </button>
+              </td>
+            </tr>`;
+        }).join('');
+      }
+
+      updateClock();
+
+    } catch (err) {
+      console.error('Dashboard fetch failed:', err);
+      setVal('stat-status',     '🔴 Error');
+      setVal('stat-status-sub', 'Backend unreachable');
+      setDot('livekit', 'down', 'Backend down');
+      toast('Could not reach backend', 'var(--red)');
+    }
+  }
+
+  // ── Force close a room ────────────────────────────────────────────────────
+
+  async function closeRoom(roomName) {
+    if (!confirm(`Force-close classroom "${roomName}"? All participants will be disconnected.`)) return;
+    try {
+      const res = await fetch(`/api/admin/rooms/${roomName}`, { method: 'DELETE' });
+      const data = await res.json();
+      toast(data.message || 'Room closed.', 'var(--green)');
+      setTimeout(loadDashboard, 800);
+    } catch (err) {
+      toast('Failed to close room.', 'var(--red)');
+    }
+  }
+
+  // ── Bootstrap ─────────────────────────────────────────────────────────────
+
+  loadDashboard();
+  // Auto-refresh every 10 seconds
+  autoTimer = setInterval(loadDashboard, 10_000);
+</script>
+</body>
+</html>

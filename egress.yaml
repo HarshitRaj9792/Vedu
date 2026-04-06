@@ -1,0 +1,53 @@
+log_level: debug
+
+api_key: ${LIVEKIT_API_KEY}
+api_secret: ${LIVEKIT_API_SECRET}
+
+ws_url: ws://livekit:7880
+insecure: true
+template_port: 7980
+
+# Redis configuration
+redis:
+  address: redis:6379
+  username: ""
+  password: ""
+
+# Health check port
+health_port: 8080
+
+# ✅ FIXED: Remove hardcoded file_outputs - this causes issues!
+# Instead, recordings are specified per-request from the backend
+
+# ✅ FIXED: S3/MinIO configuration
+s3:
+  access_key: ${MINIO_ACCESS_KEY}
+  secret: ${MINIO_SECRET_KEY}
+  bucket: recordings
+  endpoint: http://minio:9000
+  region: us-east-1
+  force_path_style: true
+  # Optional: Add a prefix for organizing recordings
+  prefix: ""
+
+# ✅ RECOMMENDED: Recording quality settings
+recording:
+  # Layout: speaker, speaker_light, grid
+  default_layout: speaker
+
+  # Video codec: h264, vp8, vp9, av1
+  video_codec: h264
+  audio_codec: aac
+
+  # Resolution & framerate
+  frame_rate: 30
+  key_frame_interval: 2
+
+# ✅ OPTIONAL: Ingress configuration
+ingress:
+  rtmp_port: 1935
+  whip_port: 8080
+
+# ✅ OPTIONAL: Webhook for egress events
+# webhook_api_key: ${EGRESS_WEBHOOK_KEY}
+# webhook_api_secret: ${EGRESS_WEBHOOK_SECRET}

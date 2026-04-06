@@ -1,0 +1,207 @@
+services:
+
+  #  Caddy — auto-HTTPS + reverse proxy
+  caddy:
+    image: caddy:2-alpine
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - vedu-backend
+      - livekit
+    networks:
+      - livekit-network
+
+  #  Redis
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
+    command: redis-server --bind 0.0.0.0
+    volumes:
+      - redis-data:/data
+    networks:
+      - livekit-network
+
+  #  MinIO (recordings storage)
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
+    volumes:
+      - minio-data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - livekit-network
+
+  #  MinIO bucket initializer (one-shot)
+  minio-init:
+    image: minio/mc:latest
+    container_name: minio-init
+    restart: "no"
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+        mc alias set local http://minio:9000 ${MINIO_ACCESS_KEY:-minioadmin} ${MINIO_SECRET_KEY:-minioadmin};
+        mc mb --ignore-existing local/recordings;
+        mc anonymous set download local/recordings;
+        echo 'MinIO bucket ready.';
+      "
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
+    networks:
+      - livekit-network
+
+  #  LiveKit Server
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: livekit
+    command: --config /etc/livekit.yaml
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./livekit.yaml:/etc/livekit.yaml:ro
+    ports:
+      - "7880:7880"           # WebSocket
+      - "7881:7881"           # RTC TCP fallback
+      - "3478:3478/udp"       # TURN/STUN
+      - "50000-50050:50000-50050/udp"   # WebRTC UDP media
+    depends_on:
+      - redis
+    networks:
+      - livekit-network
+
+  #  Egress (recording) — FIXED
+  egress:
+    image: livekit/egress:latest
+    container_name: egress
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # LiveKit Configuration
+      - LIVEKIT_API_KEY=${LIVEKIT_API_KEY}
+      - LIVEKIT_API_SECRET=${LIVEKIT_API_SECRET}
+      - LIVEKIT_URL=ws://livekit:7880
+
+
+      # redis cofig
+      - REDIS_ADDRESS=redis:6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+
+      # MinIO/S3 Configuration
+      - AWS_ACCESS_KEY_ID=${MINIO_ACCESS_KEY}
+      - AWS_SECRET_ACCESS_KEY=${MINIO_SECRET_KEY}
+      - AWS_REGION=us-east-1
+      - AWS_S3_ENDPOINT=http://minio:9000
+
+      # Egress Configuration
+      - EGRESS_CONFIG_FILE=/etc/egress.yaml
+      - LOG_LEVEL=debug
+    cap_add:
+      - SYS_ADMIN
+    shm_size: 1gb
+    volumes:
+      - ./egress.yaml:/etc/egress.yaml:ro
+      - /tmp/egress-data:/tmp/egress  # Temporary recording storage
+    depends_on:
+      minio:
+        condition: service_healthy
+      livekit:
+        condition: service_started
+      redis:
+        condition: service_started
+    networks:
+      - livekit-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  #  Ingress (RTMP)
+  ingress:
+    image: livekit/ingress:latest
+    container_name: ingress
+    restart: unless-stopped
+    environment:
+      - LIVEKIT_API_KEY=${LIVEKIT_API_KEY}
+      - LIVEKIT_API_SECRET=${LIVEKIT_API_SECRET}
+      - LIVEKIT_URL=ws://livekit:7880
+      - INGRESS_CONFIG_FILE=/etc/ingress.yaml
+    volumes:
+      - ./ingress.yaml:/etc/ingress.yaml:ro
+    ports:
+      - "1935:1935"           # RTMP
+    depends_on:
+      - livekit
+      - redis
+    networks:
+      - livekit-network
+
+  # Java Backend (Spring Boot)
+  vedu-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # LiveKit Configuration
+      - LIVEKIT_API_KEY=${LIVEKIT_API_KEY}
+      - LIVEKIT_API_SECRET=${LIVEKIT_API_SECRET}
+      - LIVEKIT_API_URL=http://livekit:7880
+
+      # MinIO Configuration
+      - MINIO_URL=http://minio:9000
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin}
+      - MINIO_BUCKET=${MINIO_BUCKET}
+
+      # Redis Configuration
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      livekit:
+        condition: service_started
+      redis:
+        condition: service_started
+      minio:
+        condition: service_healthy
+    networks:
+      - livekit-network
+
+volumes:
+  redis-data:
+  minio-data:
+  egress-data:
+  caddy-data:
+  caddy-config:
+
+networks:
+  livekit-network:
+    driver: bridge

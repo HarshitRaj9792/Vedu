@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vedu | Lobby</title>
+    <style>
+        body { background: #0f172a; color: white; font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .lobby-card { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); padding: 40px; border-radius: 30px; text-align: center; width: 450px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+        #preview-video { width: 100%; height: 250px; background: #1e293b; border-radius: 20px; object-fit: cover; margin-bottom: 20px; transform: scaleX(-1); border: 2px solid rgba(60, 82, 255, 0.3); }
+        .controls { display: flex; justify-content: center; gap: 15px; margin-bottom: 25px; }
+        .btn-circle { width: 55px; height: 55px; border-radius: 50%; border: none; cursor: pointer; font-size: 20px; background: rgba(255,255,255,0.15); color: white; transition: 0.3s; }
+        .btn-circle.off { background: #ff4757; }
+        .join-btn { background: #3c52ff; color: white; padding: 16px; border-radius: 15px; border: none; font-weight: bold; cursor: pointer; width: 100%; font-size: 18px; transition: 0.3s; }
+        .join-btn:hover { background: #2a3ebf; transform: translateY(-2px); }
+        .status-tag { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #3c52ff; margin-bottom: 10px; display: block; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="lobby-card">
+    <span class="status-tag" id="user-role">Guest</span>
+    <h2 id="room-display">Classroom</h2>
+    <p style="color: #94a3b8; font-size: 14px; margin-bottom: 20px;">Check your camera and microphone before entering.</p>
+
+    <video id="preview-video" autoplay playsinline muted></video>
+
+    <div class="controls">
+        <button id="mic-toggle" class="btn-circle" onclick="toggleMic()">🎤</button>
+        <button id="cam-toggle" class="btn-circle" onclick="toggleCam()">📹</button>
+    </div>
+
+    <button class="join-btn" onclick="enterRoom()">Enter Classroom</button>
+</div>
+
+<script>
+    let localStream;
+    let micOn = true;
+    let camOn = true;
+
+    async function initLobby() {
+        const params = new URLSearchParams(window.location.search);
+        const roomName = params.get('room');
+
+        // 1. Get real name from Login Token
+        const loginToken = localStorage.getItem("vedu_token");
+        let userName = "User_" + Math.floor(Math.random() * 100);
+
+        if (loginToken) {
+            try {
+                const payload = JSON.parse(atob(loginToken.split('.')[1]));
+                // Use email or full_name from Supabase JWT
+                userName = payload.email || payload.full_name || userName;
+            } catch (e) {
+                console.error("Token decode error", e);
+            }
+        }
+
+        localStorage.setItem("vedu_username", userName);
+        document.getElementById('room-display').innerText = roomName || "Unknown Room";
+        document.getElementById('user-role').innerText = userName;
+
+        try {
+            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            document.getElementById('preview-video').srcObject = localStream;
+        } catch (err) {
+            console.error("Media access denied:", err);
+            alert("Please enable camera/mic permissions.");
+        }
+    }
+
+    function toggleMic() {
+        micOn = !micOn;
+        localStream.getAudioTracks()[0].enabled = micOn;
+        document.getElementById('mic-toggle').classList.toggle('off', !micOn);
+        document.getElementById('mic-toggle').innerText = micOn ? '🎤' : '🔇';
+    }
+
+    function toggleCam() {
+        camOn = !camOn;
+        localStream.getVideoTracks()[0].enabled = camOn;
+        document.getElementById('cam-toggle').classList.toggle('off', !camOn);
+        document.getElementById('cam-toggle').innerText = camOn ? '📹' : '🚫';
+    }
+
+    async function enterRoom() {
+        const params = new URLSearchParams(window.location.search);
+        const roomName = params.get('room');
+        const participantName = localStorage.getItem("vedu_username");
+        const token= localStorage.getItem("vedu_token");
+        // 2. CALL THE NEW /token ENDPOINT
+        //change here the fetch with
+        try {
+            const response = await fetch('/api/meetings/token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token }`},
+                body: JSON.stringify({
+                    roomName: roomName,
+                    participantName: participantName,
+                })
+            });
+            const data = await response.json();
+
+            if (response.ok) {
+
+
+                // Save LiveKit Token and preferences
+                localStorage.setItem("openvidu_token", data.token);
+                localStorage.setItem("vedu_mic_pref", micOn);
+                localStorage.setItem("vedu_cam_pref", camOn);
+
+                // Stop hardware before moving
+                localStream.getTracks().forEach(track => track.stop());
+
+                window.location.href = `../room.html?room=${roomName}`;
+            } else {
+                alert(data.errorMessage);
+            }
+        } catch (err) {
+            console.error("Request failed:", err.message);
+            alert("Could not connect to server. Please check your network.");
+        }
+    }
+
+    window.onload = initLobby;
+</script>
+</body>
+</html>

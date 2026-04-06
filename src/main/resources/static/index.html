@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vedu </title>
+    <style>
+        /* RESET & BASE STYLES */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(180deg, #dae9f6 0%, #a6c8e8 60%, #cbdff2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            color: #3e5b77;
+        }
+
+        /* LIQUID GLASS CORE CLASS */
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        /* NAVIGATION BAR */
+        header {
+            padding: 15px 5%;
+            position: relative;
+            z-index: 1000;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            border-radius: 100px;
+            max-width: 1200px;
+            margin: 0 auto;
+
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-weight: 800;
+            font-size: 1.2rem;
+            color: #1a365d;
+            z-index: 1001;
+        }
+
+        /* DESKTOP NAV */
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 15px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #4a5568;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 8px 15px;
+            border-radius: 20px;
+            transition: 0.3s;
+        }
+
+        .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: #1a365d;
+        }
+
+        /* MOBILE MENU TOGGLE */
+        .menu-toggle {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            z-index: 1001;
+        }
+
+        .menu-toggle span {
+            width: 25px;
+            height: 3px;
+            background: #3c52ff;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+
+        /* HERO SECTION */
+        .hero {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px 10%;
+        }
+
+        .floating-asset {
+            width: clamp(120px, 20vw, 180px);
+            height: clamp(120px, 20vw, 180px);
+            background: linear-gradient(135deg, rgba(165, 201, 243, 0.8) 0%, rgba(74, 144, 226, 0.8) 100%);
+            border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255,255,255,0.4);
+            animation: morph 6s ease-in-out infinite;
+        }
+
+        .hero h1 {
+            font-size: clamp(1.8rem, 8vw, 4rem);
+            font-weight: 300;
+            color: #ffffff;
+            line-height: 1.1;
+        }
+
+        /* CTA BUTTONS */
+        .cta-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 35px;
+            justify-content: center;
+        }
+
+        .btn-main {
+            background: #fff;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 50px;
+            font-weight: 600;
+            color: #1a365d;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-glass {
+            padding: 14px 28px;
+            border-radius: 50px;
+            color: #fff;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        /* RESPONSIVE BREAKPOINT (MOBILE) */
+        @media (max-width: 768px) {
+            .menu-toggle { display: flex; }
+
+            .nav-links {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                height: 100vh;
+                width: 70%;
+                background: rgba(255, 255, 255, 0.8);
+                backdrop-filter: blur(25px);
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                transition: 0.5s cubic-bezier(0.77,0.2,0.05,1.0);
+                box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+            }
+
+            .nav-links.active { right: 0; }
+
+            .contact-btn { display: none; } /* Hide in nav on mobile */
+
+            .hero h1 { margin-bottom: 15px; }
+
+            .cta-container { flex-direction: column; width: 100%; }
+            .btn-main, .btn-glass { width: 100%; max-width: 300px; }
+        }
+
+        @keyframes morph {
+            0%, 100% { border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%; transform: rotate(0deg); }
+            50% { border-radius: 60% 40% 40% 60% / 60% 60% 40% 40%; transform: rotate(8deg); }
+        }
+
+        .footer-hint {
+            padding: 20px 5%;
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: #5d7fa0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <nav class="navbar glass-effect">
+        <div class="logo">
+            <span style="color: #3c52ff; font-size: 24px; margin-right: 8px;">💠</span> Vedu
+        </div>
+
+        <ul class="nav-links" id="navLinks">
+            <li><a href="#">Product</a></li>
+            <li><a href="#">Pricing</a></li>
+            <li><a href="#">Company</a></li>
+            <li><a href="#">Docs</a></li>
+        </ul>
+
+        <button class="contact-btn" onclick="gotosignup()" style="background: #3c52ff; color: white; border: none; padding: 10px 20px; border-radius: 50px; cursor: pointer;">Sign up</button>
+
+        <div class="menu-toggle" id="mobileMenu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </nav>
+</header>
+
+<main class="hero">
+    <div class="floating-asset"></div>
+
+    <h1>The Ultimate Toolkit For  <br>
+        <span style="background: rgba(255,255,255,0.3); padding: 0 15px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.5);">✨</span>
+        Modern Learners
+    </h1>
+
+    <p style="max-width: 400px; margin-top: 20px; font-size: 0.95rem; opacity: 0.8;">
+        A creative ecosystem built to help you explore, learn, and create.
+
+    <div class="cta-container">
+        <button class="btn-main" onclick="gotologin()">Try For Free</button>
+        <a href="Doc.html" class="btn-glass glass-effect">Documentation</a>
+    </div>
+</main>
+
+<footer class="footer-hint">SCROLL TO EXPLORE</footer>
+
+<script>
+    const mobileMenu = document.getElementById('mobileMenu');
+    const navLinks = document.getElementById('navLinks');
+
+    mobileMenu.addEventListener('click', () => {
+        navLinks.classList.toggle('active');
+        // Animate hamburger to X
+        const spans = mobileMenu.querySelectorAll('span');
+        spans[0].style.transform = navLinks.classList.contains('active') ? 'rotate(45deg) translate(5px, 6px)' : 'none';
+        spans[1].style.opacity = navLinks.classList.contains('active') ? '0' : '1';
+        spans[2].style.transform = navLinks.classList.contains('active') ? 'rotate(-45deg) translate(5px, -6px)' : 'none';
+    });
+    function gotosignup(){
+        window.location.href = "Signup.html"
+    }
+    function gotologin(){
+        window.location.href = "login.html"
+    }
+</script>
+</body>
+</html>

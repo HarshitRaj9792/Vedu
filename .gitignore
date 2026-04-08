@@ -1,0 +1,24 @@
+docker compose up --build -d vedu-backend.# ── Secrets (NEVER commit these) ──────────────────────────────
+.env
+
+# ── Maven build output ─────────────────────────────────────────
+target/
+*.jar
+*.war
+
+# ── IDE files ──────────────────────────────────────────────────
+.idea/
+*.iml
+.vscode/
+*.swp
+
+# ── Docker data volumes (if bind-mounted locally) ──────────────
+data/
+
+# ── Logs ──────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── OS ────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db

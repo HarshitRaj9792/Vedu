@@ -369,6 +369,65 @@
       display: flex;
     }
 
+    /* -- SESSION TIMER ----------------------------- */
+    #session-timer {
+      position: fixed;
+      top: 14px;
+      left: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(13, 19, 36, 0.85);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(79, 110, 247, 0.35);
+      border-radius: 14px;
+      padding: 8px 14px 8px 10px;
+      z-index: 998;
+      opacity: 0;
+      transform: translateY(-6px);
+      transition: opacity 0.4s, transform 0.4s;
+      pointer-events: none;
+    }
+    #session-timer.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .timer-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #4f6ef7;
+      box-shadow: 0 0 7px #4f6ef7;
+      animation: timer-pulse 2s ease-in-out infinite;
+      flex-shrink: 0;
+      align-self: center;
+    }
+    @keyframes timer-pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.35; }
+    }
+    .timer-content {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .timer-elapsed {
+      font-size: 14px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.04em;
+      color: #e2e8f0;
+      line-height: 1;
+    }
+    .timer-ist {
+      font-size: 10.5px;
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+      color: #7b93ff;
+      letter-spacing: 0.03em;
+      line-height: 1;
+    }
+
     /* -- CHAT PANEL -------------------------------- */
     #chat-panel {
       position: fixed;
@@ -687,18 +746,18 @@
          opentok-layout is called after any tile change.
          ---------------------------------------------- -->
     <div id="controls">
-      <button class="ctrl-btn" id="mic-btn" title="Toggle mic" onclick="toggleMic()">🎤</button>
-      <button class="ctrl-btn" id="cam-btn" title="Toggle camera" onclick="toggleCam()">📹</button>
+      <button class="ctrl-btn" id="mic-btn" title="Toggle mic" onclick="toggleMic()">🎙️</button>
+      <button class="ctrl-btn" id="cam-btn" title="Toggle camera" onclick="toggleCam()">📷</button>
       <button class="ctrl-btn" id="screen-btn" title="Toggle screen share" onclick="toggleScreen()">📺</button>
       <button class="ctrl-btn" id="hand-btn" title="Raise hand" onclick="toggleHand()">✋</button>
-      <button class="ctrl-btn" id="wb-btn" title="Toggle whiteboard" onclick="toggleWhiteboard()">🖊️</button>
+      <button class="ctrl-btn" id="wb-btn" title="Toggle whiteboard" onclick="toggleWhiteboard()">✎ᝰ</button>
       <button class="ctrl-btn" id="chat-btn" title="Toggle chat" onclick="toggleChat()">
-        💬<span id="chat-unread"></span>
+        🗪<span id="chat-unread"></span>
       </button>
       <!-- Recording button — shown to teacher only via JS -->
       <button class="ctrl-btn" id="rec-btn" title="Start/Stop Recording" onclick="toggleRecording()"
         style="display:none">⏺️</button>
-      <button class="ctrl-btn ctrl-leave" title="Leave" onclick="leaveRoom()">LEAVE</button>
+      <button class="ctrl-btn ctrl-leave" title="Leave" onclick="leaveRoom()">📞</button>
     </div>
 
   </div>
@@ -706,7 +765,7 @@
   <!-- CHAT PANEL -->
   <div id="chat-panel">
     <div id="chat-header">
-      <span>💬 Classroom Chat</span>
+      <span>🗪 Classroom Chat</span>
       <button id="chat-close" onclick="toggleChat()" title="Close chat">✕</button>
     </div>
     <div id="chat-messages"></div>
@@ -724,6 +783,15 @@
   <div id="rec-indicator">
     <span>⏺</span>
     <span>REC</span>
+  </div>
+
+  <!-- SESSION TIMER -->
+  <div id="session-timer">
+    <div class="timer-dot"></div>
+    <div class="timer-content">
+      <div class="timer-elapsed" id="timer-display">00:00:00</div>
+      <div class="timer-ist" id="timer-ist">-- IST</div>
+    </div>
   </div>
 
   <script>
@@ -847,6 +915,7 @@
       // -- Remote track subscribed ------------------------------------------
       room.on(LK.RoomEvent.TrackSubscribed, (track, publication, participant) => {
         if (track.kind === LK.Track.Kind.Video) {
+          if (publication.trackName === 'whiteboard' || track.name === 'whiteboard') return;
           const isScreen = publication.source === LK.Track.Source.ScreenShare;
           const tileId = isScreen
             ? `tile-screen-${participant.identity}`
@@ -866,6 +935,7 @@
       // -- Remote track unsubscribed ----------------------------------------
       room.on(LK.RoomEvent.TrackUnsubscribed, (track, publication, participant) => {
         if (track.kind === LK.Track.Kind.Video) {
+          if (publication.trackName === 'whiteboard' || track.name === 'whiteboard') return;
           const isScreen = publication.source === LK.Track.Source.ScreenShare;
           const tileId = isScreen
             ? `tile-screen-${participant.identity}`
@@ -963,36 +1033,47 @@
       const token = localStorage.getItem('openvidu_token');
       if (!token) { window.location.href = '/'; return; }
 
-      // TODO: Change to 'wss://vedulive.net2coder.in' when deploying
-      const serverUrl = 'ws://localhost:7880';
+      // Production: LiveKit routed through Caddy HTTPS (/rtc* and /twirp* proxied to livekit:7880)
+      // DO NOT use port 7880 directly — it's plain WS inside Docker only (browsers block it on HTTPS pages)
+      const serverUrl = 'wss://vedulive.net2coder.in';
 
       // Create room with high-quality settings
       room = new LK.Room({
         adaptiveStream: true,   // auto-downscale for slow networks
-        dynacast: true,   // only send layers that are subscribed
+        dynacast: true,         // only send layers that are subscribed
 
         // -- VIDEO capture settings --------------------------------
         videoCaptureDefaults: {
-          resolution: LK.VideoPresets.h1080.resolution,  // capture at 1080p
+          resolution: {
+            width: 1920,
+            height: 1080,
+            frameRate: 30,
+            aspectRatio: 16 / 9,
+          },
+          facingMode: 'user',   // always use front/webcam
         },
 
         // -- AUDIO capture settings --------------------------------
         audioCaptureDefaults: {
-          autoGainControl: true,   // normalize volume levels
-          echoCancellation: true,   // remove speaker echo
-          noiseSuppression: true,   // reduce background noise
-          sampleRate: 48000,  // 48kHz (CD quality)
+          autoGainControl: true,    // normalize volume levels
+          echoCancellation: true,    // remove speaker echo
+          noiseSuppression: true,    // reduce background noise
+          sampleRate: 48000,   // 48 kHz — broadcast quality
+          channelCount: 1,       // mono: better clarity & lower bandwidth for voice
         },
 
         // -- PUBLISH defaults --------------------------------------
         publishDefaults: {
-          // Video
-          videoSimulcast: true,                             // send 3 quality layers
-          videoCodec: 'h264',                           // H264: better quality at lower bitrate than VP8
-          videoEncoding: LK.VideoPresets.h1080.encoding,
-          // Audio
+          // Video — H264 @ 5 Mbps max, 30fps, 3 simulcast layers
+          videoSimulcast: true,
+          videoCodec: 'h264',
+          videoEncoding: {
+            maxBitrate: 5_000_000,   // 5 Mbps — crisp 1080p
+            maxFramerate: 30,
+          },
+          // Audio — 128 kbps: noticeably richer than the old 64 kbps
           audioPreset: {
-            maxBitrate: 64_000,   // 64 kbps — clear voice, low bandwidth
+            maxBitrate: 128_000,
           },
         },
       });
@@ -1002,6 +1083,7 @@
       try {
         await room.connect(serverUrl, token);
         console.log('[LiveKit] Connected as', room.localParticipant.identity);
+        startSessionTimer();  // ← start the class session clock
       } catch (err) {
         console.error('[LiveKit] Connection failed', err);
         return;
@@ -1120,6 +1202,7 @@
       }
 
       await room.disconnect();
+      stopSessionTimer();
       window.location.href = '/';
     }
 
@@ -1438,7 +1521,10 @@
       ctx.stroke();
     }
 
-    function toggleWhiteboard(forceOpen, broadcast = true) {
+    let wbVideoTrackPub = null;
+    let wbMediaStream = null;
+
+    async function toggleWhiteboard(forceOpen, broadcast = true) {
       wbOpen = typeof forceOpen === 'boolean' ? forceOpen : !wbOpen;
       const panel = document.getElementById('whiteboard-panel');
 
@@ -1447,12 +1533,38 @@
         document.querySelectorAll('.video-tile').forEach(t => t.classList.remove('OT_big'));
         panel.classList.add('OT_big');
         document.getElementById('empty-msg').style.display = 'none';
+
+        // Publish canvas stream so Egress can record it
+        if (isTeacher && room) {
+          try {
+            const canvas = document.getElementById('wb-canvas');
+            wbMediaStream = canvas.captureStream(30);
+            const msTrack = wbMediaStream.getVideoTracks()[0];
+            const lkTrack = new LK.LocalVideoTrack(msTrack);
+            wbVideoTrackPub = await room.localParticipant.publishTrack(lkTrack, {
+              name: 'whiteboard',
+              source: LK.Track.Source.ScreenShare
+            });
+          } catch (e) {
+            console.error("Failed to publish whiteboard track", e);
+          }
+        }
       } else {
         panel.classList.remove('open');
         panel.classList.remove('OT_big');
         const hasActiveTile = Array.from(document.querySelectorAll('.video-tile')).some(t => t.id !== 'whiteboard-panel' || t.classList.contains('open'));
         if (!hasActiveTile) {
           document.getElementById('empty-msg').style.display = '';
+        }
+
+        // Unpublish canvas stream
+        if (isTeacher && wbVideoTrackPub && room) {
+          room.localParticipant.unpublishTrack(wbVideoTrackPub.track);
+          wbVideoTrackPub = null;
+          if (wbMediaStream) {
+            wbMediaStream.getTracks().forEach(t => t.stop());
+            wbMediaStream = null;
+          }
         }
       }
 
@@ -1474,7 +1586,46 @@
     }
 
     // ----------------------------------------------------------------------------
-    // 8. BOOTSTRAP
+    // 8. SESSION TIMER
+    // ----------------------------------------------------------------------------
+
+    let _timerStart  = null;
+    let _timerHandle = null;
+
+    function startSessionTimer() {
+      _timerStart = Date.now();
+      const el   = document.getElementById('session-timer');
+      const disp = document.getElementById('timer-display');
+      const ist  = document.getElementById('timer-ist');
+      el.classList.add('visible');
+
+      _timerHandle = setInterval(() => {
+        // -- Elapsed session time (HH:MM:SS) --
+        const secs = Math.floor((Date.now() - _timerStart) / 1000);
+        const hh   = String(Math.floor(secs / 3600)).padStart(2, '0');
+        const mm   = String(Math.floor((secs % 3600) / 60)).padStart(2, '0');
+        const ss   = String(secs % 60).padStart(2, '0');
+        disp.textContent = `${hh}:${mm}:${ss}`;
+
+        // -- Current IST wall-clock time (always Asia/Kolkata regardless of server/browser location) --
+        const istTime = new Date().toLocaleTimeString('en-IN', {
+          timeZone:     'Asia/Kolkata',
+          hour:         '2-digit',
+          minute:       '2-digit',
+          second:       '2-digit',
+          hour12:       true,
+        });
+        ist.textContent = `${istTime} IST`;
+      }, 1000);
+    }
+
+    function stopSessionTimer() {
+      clearInterval(_timerHandle);
+      _timerHandle = null;
+    }
+
+    // ----------------------------------------------------------------------------
+    // 9. BOOTSTRAP
     // ----------------------------------------------------------------------------
 
     window.onresize = () => reflow();

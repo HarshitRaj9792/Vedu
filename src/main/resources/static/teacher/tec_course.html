@@ -4,231 +4,268 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vedu | My Courses</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #3c52ff;
-            --accent: #9333ea;
-            --bg: #0f172a;
-            --glass: rgba(255, 255, 255, 0.05);
-            --border: rgba(255, 255, 255, 0.1);
+            --accent:  #9333ea;
+            --green:   #10b981;
+            --bg:      #0f172a;
+            --glass:   rgba(255,255,255,0.04);
+            --border:  rgba(255,255,255,0.1);
         }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; padding: 40px; min-height: 100vh; }
 
-        body { 
-            background: var(--bg); 
-            color: white; 
-            font-family: 'Inter', sans-serif; 
-            padding: 40px; 
-            margin: 0;
-            min-height: 100vh;
+        .glass-panel {
+            background: var(--glass); backdrop-filter: blur(20px);
+            border-radius: 30px; padding: 40px; border: 1px solid var(--border);
+            max-width: 1200px; margin: 0 auto;
         }
-
-        .glass-panel { 
-            background: var(--glass); 
-            backdrop-filter: blur(20px); 
-            border-radius: 30px; 
-            padding: 40px; 
-            border: 1px solid var(--border);
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 40px; 
-        }
-
-        .header h1 { 
-            margin: 0; 
-            font-size: 32px; 
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+        .header h1 {
+            font-size: 32px;
             background: linear-gradient(45deg, var(--primary), var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .create-btn {
+            background: var(--primary); color: white; border: none;
+            padding: 12px 25px; border-radius: 15px; font-weight: 700;
+            cursor: pointer; text-decoration: none; display: inline-block; transition: 0.3s;
+        }
+        .create-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(60,82,255,0.3); }
+
+        .course-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; }
+
+        .course-card {
+            background: rgba(255,255,255,0.03); border-radius: 20px;
+            border: 1px solid var(--border); overflow: hidden;
+            transition: 0.35s; display: flex; flex-direction: column;
+        }
+        .course-card:hover { transform: translateY(-5px); background: rgba(255,255,255,0.07); }
+        .course-card.live { border-color: var(--green); box-shadow: 0 0 20px rgba(16,185,129,0.18); }
+        .course-card.done { opacity: 0.55; }
+
+        .card-banner {
+            height: 110px; display: flex; align-items: center;
+            justify-content: center; font-size: 38px;
+        }
+        .banner-upcoming { background: linear-gradient(45deg, #1e3a5f, #2d1b69); }
+        .banner-live     { background: linear-gradient(45deg, #064e3b, #065f46); }
+        .banner-done     { background: linear-gradient(45deg, #1e293b, #334155); }
+
+        .card-body { padding: 22px; flex-grow: 1; display: flex; flex-direction: column; gap: 10px; }
+        .card-body h3 { font-size: 18px; font-weight: 700; }
+        .detail-row { display: flex; align-items: center; gap: 8px; color: #94a3b8; font-size: 13px; }
+
+        /* BADGE */
+        .status-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 4px 11px; border-radius: 20px;
+            font-size: 11px; font-weight: 700; letter-spacing: 0.5px; width: fit-content;
+        }
+        .badge-upcoming { background: rgba(59,130,246,0.12); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+        .badge-live     { background: rgba(16,185,129,0.12); color: #34d399; border: 1px solid rgba(16,185,129,0.35); }
+        .badge-done     { background: rgba(148,163,184,0.1); color: #94a3b8; border: 1px solid rgba(148,163,184,0.2); }
+
+        .pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: #34d399; animation: pulse 1.4s infinite; }
+        @keyframes pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.6);opacity:.4} }
+
+        .countdown-chip {
+            font-size: 12px; color: #f59e0b;
+            background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,.25);
+            border-radius: 8px; padding: 4px 10px; display: inline-block;
         }
 
-        .create-btn { 
-            background: var(--primary); 
-            color: white; 
-            border: none; 
-            padding: 12px 25px; 
-            border-radius: 15px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            transition: 0.3s;
-            text-decoration: none;
-            display: inline-block;
+        /* BUTTONS */
+        .btn-row { display: flex; gap: 8px; margin-top: auto; }
+        .join-btn {
+            flex: 1; padding: 12px; border-radius: 12px;
+            font-weight: 700; font-size: 13px; cursor: pointer; transition: 0.3s; border: none;
         }
+        .btn-live     { background: var(--green); color: white; }
+        .btn-live:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(16,185,129,.3); }
+        .btn-upcoming { background: rgba(59,130,246,0.08); color: #60a5fa; border: 1px solid rgba(59,130,246,.25); cursor: not-allowed; }
+        .btn-done     { background: rgba(100,116,139,0.1); color: #64748b; border: 1px solid rgba(100,116,139,.2); cursor: not-allowed; }
+        .btn-complete { background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,.25); flex: 0 0 auto; padding: 12px 14px; }
+        .btn-complete:hover { background: rgba(239,68,68,0.2); }
+        .btn-delete { background: rgba(239,68,68,0.08); color: #f87171; border: 1px solid rgba(239,68,68,.2); flex: 0 0 auto; padding: 12px 14px; }
+        .btn-delete:hover { background: rgba(239,68,68,0.22); }
 
-        .create-btn:hover { 
-            transform: translateY(-3px); 
-            box-shadow: 0 10px 20px rgba(60, 82, 255, 0.3); 
-        }
-
-        .course-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
-            gap: 25px; 
-        }
-
-        .course-card { 
-            background: rgba(255, 255, 255, 0.03); 
-            border-radius: 20px; 
-            border: 1px solid var(--border); 
-            overflow: hidden; 
-            transition: 0.3s ease;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .course-card:hover { 
-            transform: translateY(-5px); 
-            background: rgba(255, 255, 255, 0.08); 
-            border-color: var(--primary);
-        }
-
-        .card-banner { 
-            height: 120px; 
-            background: linear-gradient(45deg, var(--primary), var(--accent)); 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: 40px;
-            opacity: 0.8;
-        }
-
-        .card-body { padding: 25px; flex-grow: 1; }
-
-        .card-body h3 { margin: 0 0 10px 0; font-size: 20px; font-weight: 700; }
-        
-        .detail-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #94a3b8;
-            font-size: 14px;
-            margin-bottom: 8px;
-        }
-
-        .join-btn { 
-            width: 100%; 
-            background: rgba(60, 82, 255, 0.1); 
-            color: white; 
-            border: 1px solid var(--primary); 
-            padding: 12px; 
-            border-radius: 12px; 
-            cursor: pointer; 
-            transition: 0.3s; 
-            font-weight: bold;
-            margin-top: 15px;
-        }
-
-        .join-btn:hover { background: var(--primary); }
-
-        #loading-state { text-align: center; padding: 40px; color: #94a3b8; }
+        #loading-state { text-align: center; padding: 50px; color: #94a3b8; font-size: 16px; }
     </style>
 </head>
 <body>
-
-    <div class="glass-panel">
-        <div class="header">
-            <div>
-                <h1>My Courses</h1>
-                <p style="color: #94a3b8; margin-top: 5px;">Manage your scheduled classes and live sessions.</p>
-            </div>
-            <a href="teacher_dashboard.html" class="create-btn">+ Schedule New</a>
+<div class="glass-panel">
+    <div class="header">
+        <div>
+            <h1>My Courses</h1>
+            <p style="color:#94a3b8;margin-top:5px;">Manage your scheduled classes and live sessions.</p>
         </div>
-
-        <div id="loading-state">Syncing with Vedu Server...</div>
-        
-        <div class="course-grid" id="course-container">
-            </div>
+        <a href="/teacher/index.html" class="create-btn">+ Schedule New</a>
     </div>
+    <div id="loading-state">Syncing with Vedu Server…</div>
+    <div class="course-grid" id="course-container"></div>
+</div>
 
-    <script>
-        // Adjust this to your actual API path
-        const API_URL = "/api/teachers/my-Schedule";
+<script>
+    const API_BASE  = "/api/teachers";
+    const LIVE_BEFORE_MS = 30  * 60 * 1000;   // 30 min before
+    const LIVE_AFTER_MS  = 3   * 60 * 60 * 1000; // 3 hrs after
 
-        async function fetchMyCourses() {
-            const container = document.getElementById('course-container');
-            const loader = document.getElementById('loading-state');
-            const token = localStorage.getItem('vedu_token');
+    let courses = [];
 
-            if (!token) {
-                alert("Session expired. Please login again.");
-                window.location.href = "../login.html";
+    // ── Status logic ─────────────────────────────────────────────────────────
+    // DB status is the source of truth for COMPLETED.
+    // For LIVE display, we also check the time window so the button enables
+    // as soon as the window opens even if DB still says UPCOMING.
+    function resolveStatus(course) {
+        if (course.status === 'COMPLETED') return 'completed';
+        const now   = Date.now();
+        const start = new Date(course.topicTime).getTime();
+        const diff  = start - now;
+        if (diff > LIVE_BEFORE_MS) return 'upcoming';   // too early
+        if (now <= start + LIVE_AFTER_MS) return 'live'; // inside window
+        return 'completed';                              // window passed
+    }
+
+    function formatCountdown(topicTime) {
+        const diff = new Date(topicTime).getTime() - Date.now();
+        if (diff <= 0) return '';
+        const h = Math.floor(diff / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        const s = Math.floor((diff % 60000)   / 1000);
+        if (h > 0) return `Starts in ${h}h ${m}m`;
+        if (m > 0) return `Starts in ${m}m ${s}s`;
+        return `Starts in ${s}s`;
+    }
+
+    function buildCard(course) {
+        const status  = resolveStatus(course);
+        const dateObj = new Date(course.topicTime);
+        const dateStr = dateObj.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric'});
+        const timeStr = dateObj.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit'});
+
+        const bannerClass = status === 'live' ? 'banner-live' : status === 'completed' ? 'banner-done' : 'banner-upcoming';
+        const cardClass   = status === 'live' ? 'live'        : status === 'completed' ? 'done'        : '';
+        const emoji       = status === 'live' ? '🟢' : status === 'completed' ? '✅' : '💻';
+
+        const badge = status === 'live'
+            ? `<span class="status-badge badge-live"><span class="pulse-dot"></span>LIVE NOW</span>`
+            : status === 'completed'
+            ? `<span class="status-badge badge-done">✅ Completed</span>`
+            : `<span class="status-badge badge-upcoming">⏰ Upcoming</span>`;
+
+        const countdown = status === 'upcoming'
+            ? `<span class="countdown-chip">${formatCountdown(course.topicTime)}</span>` : '';
+
+        // Enter button
+        const enterBtn = status === 'live'
+            ? `<button class="join-btn btn-live"    onclick="enterClass('${course.topicName}', ${course.id})">🚀 Enter Classroom</button>`
+            : status === 'completed'
+            ? `<button class="join-btn btn-done"     disabled>🔒 Class Ended</button>`
+            : `<button class="join-btn btn-upcoming" disabled>⏳ Not Started Yet</button>`;
+
+        // "Mark Complete" button shown only for LIVE sessions
+        const markDoneBtn = status === 'live'
+            ? `<button class="join-btn btn-complete" onclick="markComplete(${course.id})" title="Mark as completed">✔ Done</button>`
+            : '';
+
+        // "Cancel" button shown only for UPCOMING sessions
+        const deleteBtn = status === 'upcoming'
+            ? `<button class="join-btn btn-delete" onclick="deleteSchedule(${course.id})" title="Cancel this class">🗑 Cancel</button>`
+            : '';
+
+        return `
+        <div class="course-card ${cardClass}">
+            <div class="card-banner ${bannerClass}">${emoji}</div>
+            <div class="card-body">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+                    <h3>${course.topicName}</h3>${badge}
+                </div>
+                <div class="detail-row">📅 <span>${dateStr}</span></div>
+                <div class="detail-row">🕒 <span>${timeStr} IST</span></div>
+                <div class="detail-row">👥 <span>${course.topicCourse} — ${course.topicClass}</span></div>
+                ${countdown}
+                <div class="btn-row">${enterBtn}${markDoneBtn}${deleteBtn}</div>
+            </div>
+        </div>`;
+    }
+
+    async function fetchMyCourses() {
+        const loader = document.getElementById('loading-state');
+        const token  = localStorage.getItem('vedu_token');
+        if (!token) { window.location.href = "../login.html"; return; }
+
+        try {
+            const res = await fetch(`${API_BASE}/my-Schedule`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.status === 201 || res.status === 204) {
+                loader.innerText = "No classes scheduled yet. Create one from the dashboard!";
                 return;
             }
+            if (!res.ok) throw new Error("Server error " + res.status);
 
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (response.status === 204) {
-                    loader.innerText = "You haven't created any courses yet.";
-                    return;
-                }
-
-                if (!response.ok) throw new Error("Server error");
-
-                const courses = await response.json();
-                loader.style.display = 'none';
-
-                if (courses.length === 0) {
-                    loader.innerText = "No courses found.";
-                    loader.style.display = 'block';
-                    return;
-                }
-
-                container.innerHTML = courses.map(course => {
-                    const dateObj = new Date(course.topicTime);
-                    return `
-                        <div class="course-card">
-                            <div class="card-banner">💻</div>
-                            <div class="card-body">
-                                <h3>${course.topicName}</h3>
-                                
-                                <div class="detail-row">
-                                    <span>📅</span>
-                                    <span>${dateObj.toLocaleDateString()}</span>
-                                </div>
-                                
-                                <div class="detail-row">
-                                    <span>🕒</span>
-                                    <span>${dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                                </div>
-                                
-                                <div class="detail-row">
-                                    <span>👥</span>
-                                    <span>Target: ${course.topicCourse} - ${course.topicClass}</span>
-                                </div>
-
-                                <button class="join-btn" onclick="enterClass('${course.topicName}')">
-                                    Launch Classroom
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-
-            } catch (error) {
-                loader.innerText = "Failed to connect to Vedu Server. Check if Backend is running.";
-                console.error(error);
-            }
+            courses = await res.json();
+            loader.style.display = 'none';
+            if (!courses.length) { loader.innerText = "No courses found."; loader.style.display = 'block'; return; }
+            renderCourses();
+        } catch (err) {
+            loader.innerText = "Failed to connect to Vedu Server.";
+            console.error(err);
         }
+    }
 
-        function enterClass(roomId) {
-            // Redirects to lobby with the room ID and teacher role
-            window.location.href = `../lobby.html?room=${roomId}&role=Teacher`;
+    function renderCourses() {
+        document.getElementById('course-container').innerHTML = courses.map(buildCard).join('');
+    }
+
+    async function patchStatus(id, status) {
+        const token = localStorage.getItem('vedu_token');
+        await fetch(`${API_BASE}/schedules/${id}/status?status=${status}`, {
+            method: 'PATCH',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        // Update local copy so re-render is instant
+        const c = courses.find(c => c.id === id);
+        if (c) c.status = status;
+    }
+
+    async function enterClass(roomId, scheduleId) {
+        // Mark as LIVE in DB when teacher enters
+        await patchStatus(scheduleId, 'LIVE');
+        renderCourses();
+        window.location.href = `../lobby.html?room=${encodeURIComponent(roomId)}&role=Teacher`;
+    }
+
+    async function markComplete(scheduleId) {
+        if (!confirm('Mark this class as Completed?')) return;
+        await patchStatus(scheduleId, 'COMPLETED');
+        renderCourses();
+    }
+
+    async function deleteSchedule(scheduleId) {
+        if (!confirm('Cancel and delete this class? This cannot be undone.')) return;
+        const token = localStorage.getItem('vedu_token');
+        const res = await fetch(`${API_BASE}/schedules/${scheduleId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+            courses = courses.filter(c => c.id !== scheduleId);
+            renderCourses();
+        } else {
+            const msg = await res.text();
+            alert('Could not delete: ' + msg);
         }
+    }
 
-        // Initialize on load
-        window.onload = fetchMyCourses;
-    </script>
+    // Re-render every 30 s (countdowns + auto-status refresh)
+    window.onload = () => {
+        fetchMyCourses();
+        setInterval(() => { if (courses.length) renderCourses(); }, 30000);
+    };
+</script>
 </body>
 </html>

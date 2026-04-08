@@ -199,10 +199,10 @@
                     document.getElementById('status-text').innerText = `Course: ${data.course || 'Not set'} | Roll: ${data.rollNumber || 'Not set'} | Batch : ${data.studentClass}`;
 
                     // Pre-fill modal
-                    document.getElementById('form-name').value = data.fullName || '';
+                    document.getElementById('form-name').value  = data.fullName || '';
                     document.getElementById('form-course').value = data.course || '';
-                    document.getElementById('form-year').value = data.studentClass || '';
-                    document.getElementById('form-roll').value = data.rollNumber || '';
+                    document.getElementById('form-year').value   = data.studentClass || '';
+                    document.getElementById('form-roll').value   = data.rollNumber || '';
                 }
             }
         } catch (err) { console.error("Fetch error:", err); }
@@ -211,10 +211,10 @@
     updateForm.onsubmit = async (e) => {
         e.preventDefault();
         const payload = {
-            fullName: document.getElementById('form-name').value,
-            course: document.getElementById('form-course').value,
+            fullName:     document.getElementById('form-name').value,
+            course:       document.getElementById('form-course').value,
             studentClass: document.getElementById('form-year').value,
-            rollNumber: document.getElementById('form-roll').value
+            rollNumber:   document.getElementById('form-roll').value
         };
 
         try {
@@ -237,15 +237,13 @@
         } catch (err) { alert("Server connection error."); }
     };
 
-    window.onload = () =>{
-        if(!localStorage.getItem("vedu_token")){
-            window.Location.href ="/login.html"
+    window.onload = () => {
+        if (!localStorage.getItem("vedu_token")) {
+            window.location.href = "/login.html";
             return;
         }
         fetchProfile();
     };
-
-
 </script>
 </body>
 </html>

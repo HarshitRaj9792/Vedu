@@ -130,37 +130,34 @@ public class RoomController {
                 log.info("Classroom {} has closed.", event.getRoom().getName());
             }
 
-            // Detect when recording (egress) finishes to save to DB
+            // Detect when recording (egress) finishes → update the pending DB row with the real file URL
             if (event.getEvent().equals("egress_ended")) {
                 livekit.LivekitEgress.EgressInfo egressInfo = event.getEgressInfo();
                 if (egressInfo != null) {
                     String egressId = egressInfo.getEgressId();
-                    String teacherId = recordingService.getTeacherIdForEgress(egressId);
-                    String room = egressInfo.getRoomName();
-                    
-                    String fileUrl = "";
-                    if (egressInfo.getFileResultsCount() > 0) {
-                        fileUrl = egressInfo.getFileResults(0).getLocation();
-                    } else if (egressInfo.hasFile()) {
-                        fileUrl = egressInfo.getFile().getLocation();
-                    }
 
-                    if (teacherId != null && !fileUrl.isEmpty()) {
-                        Recording recording = new Recording();
-                        recording.setTeacherId(teacherId);
-                        recording.setRoomName(room != null ? room : "Unknown Room");
-                        // Egress returns internal docker network url like "http://minio:9000/recordings/..."
-                        // We extract the path and bind it to the dynamic public URL (Azure IP + port or Localhost)
+                    // Compute fileUrl once — must be effectively final for lambda capture
+                    final String fileUrl = egressInfo.getFileResultsCount() > 0
+                            ? egressInfo.getFileResults(0).getLocation()
+                            : egressInfo.hasFile() ? egressInfo.getFile().getLocation() : "";
+
+                    // Find the pending Recording row saved at startRecording() time
+                    recordingRepository.findByEgressId(egressId).ifPresentOrElse(recording -> {
+                        if (fileUrl.isEmpty()) {
+                            // No file produced (e.g. recording was too short) — delete the pending row
+                            recordingRepository.delete(recording);
+                            log.warn("Egress {} produced no file — removed pending row", egressId);
+                            return;
+                        }
+
+                        // Convert internal MinIO URL → public URL
                         String pathSegment = fileUrl;
                         try {
                             if (fileUrl.startsWith("http")) {
                                 pathSegment = new java.net.URL(fileUrl).getPath();
                             }
                         } catch (Exception ignored) { }
-                        
-                        if (pathSegment.startsWith("/")) {
-                            pathSegment = pathSegment.substring(1);
-                        }
+                        if (pathSegment.startsWith("/")) pathSegment = pathSegment.substring(1);
 
                         String finalUrl = minioPublicUrl;
                         if (!finalUrl.endsWith("/")) finalUrl += "/";
@@ -168,12 +165,9 @@ public class RoomController {
 
                         recording.setFileUrl(finalUrl);
                         recordingRepository.save(recording);
-                        
-                        recordingService.removeTeacherIdMapping(egressId);
-                        log.info("Saved recording artifact for teacher {} -> {}", teacherId, fileUrl);
-                    } else {
-                        log.warn("Egress {} completed but missing teacher mapping or URL", egressId);
-                    }
+                        log.info("Updated recording egressId={} teacher={} url={}", egressId, recording.getTeacherId(), finalUrl);
+
+                    }, () -> log.warn("Egress {} ended but no pending DB row found — recording may be lost", egressId));
                 }
             }
 

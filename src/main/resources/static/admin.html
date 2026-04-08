@@ -197,6 +197,139 @@
       pointer-events: none; z-index: 999;
     }
     #toast.show { opacity: 1; transform: translateY(0); }
+
+    /* ── RECORDINGS MODAL ──────────────────────── */
+    .modal-backdrop {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(7, 11, 20, 0.82);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.25s;
+    }
+    .modal-backdrop.open { opacity: 1; pointer-events: all; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 18px;
+      width: 92vw; max-width: 1100px;
+      max-height: 85vh;
+      display: flex; flex-direction: column;
+      transform: translateY(24px) scale(0.97);
+      transition: transform 0.25s cubic-bezier(.22,.68,0,1.2);
+      box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+      overflow: hidden;
+    }
+    .modal-backdrop.open .modal {
+      transform: translateY(0) scale(1);
+    }
+
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 28px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+      flex-shrink: 0;
+    }
+    .modal-title {
+      font-size: 17px; font-weight: 700;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .modal-title span { font-size: 22px; }
+    .modal-close {
+      width: 34px; height: 34px; border-radius: 50%;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.05);
+      color: var(--muted); font-size: 18px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s, color 0.2s;
+    }
+    .modal-close:hover { background: rgba(239,68,68,0.2); color: #ef4444; }
+
+    .modal-body {
+      overflow-y: auto; flex: 1;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+    .modal-body table { width: 100%; border-collapse: collapse; }
+    .modal-body thead { background: var(--surface2); position: sticky; top: 0; z-index: 1; }
+    .modal-body thead th {
+      text-align: left; padding: 12px 20px;
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+    .modal-body tbody tr { border-top: 1px solid var(--border); transition: background 0.15s; }
+    .modal-body tbody tr:hover { background: var(--surface2); }
+    .modal-body tbody td { padding: 13px 20px; font-size: 14px; vertical-align: middle; }
+
+    .modal-footer {
+      padding: 14px 28px;
+      border-top: 1px solid var(--border);
+      background: var(--surface2);
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .modal-footer-info { font-size: 12px; color: var(--muted); }
+    .btn-close-modal {
+      background: rgba(79,110,247,0.15);
+      border: 1px solid rgba(79,110,247,0.3);
+      color: var(--accent2); border-radius: 8px;
+      padding: 7px 18px; font-size:13px; cursor:pointer;
+      transition: background 0.2s;
+    }
+    .btn-close-modal:hover { background: rgba(79,110,247,0.3); }
+
+    .rec-url {
+      font-size: 12px; color: var(--muted);
+      white-space: nowrap; overflow: hidden;
+      text-overflow: ellipsis; max-width: 220px;
+    }
+    .btn-watch {
+      padding: 5px 12px; border: 1px solid rgba(79,110,247,0.4);
+      background: rgba(79,110,247,0.1); color: var(--accent2);
+      border-radius: 8px; font-size: 12px; cursor:pointer;
+      text-decoration: none; display:inline-block;
+      transition: background 0.2s;
+    }
+    .btn-watch:hover { background: rgba(79,110,247,0.25); }
+    .actions-cell { display: flex; gap: 8px; align-items: center; }
+    .btn-recordings {
+      background: rgba(123,147,255,0.12);
+      border: 1px solid rgba(123,147,255,0.3);
+      color: var(--accent2); border-radius: 8px;
+      padding: 6px 14px; font-size:13px; cursor:pointer;
+      transition: background 0.2s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .btn-recordings:hover { background: rgba(123,147,255,0.25); }
+
+    .btn-schedules {
+      background: rgba(16,185,129,0.12);
+      border: 1px solid rgba(16,185,129,0.3);
+      color: #34d399; border-radius: 8px;
+      padding: 6px 14px; font-size:13px; cursor:pointer;
+      transition: background 0.2s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .btn-schedules:hover { background: rgba(16,185,129,0.25); }
+
+    /* Schedule status badges */
+    .sch-badge {
+      display: inline-block; padding: 3px 9px;
+      border-radius: 20px; font-size: 11px; font-weight: 700;
+    }
+    .sch-upcoming { background: rgba(59,130,246,0.15); color: #60a5fa; }
+    .sch-live     { background: rgba(16,185,129,0.15); color: #34d399; }
+    .sch-done     { background: rgba(148,163,184,0.12); color: #94a3b8; }
+
+    .status-select {
+      background: var(--surface2); color: var(--text);
+      border: 1px solid var(--border); border-radius: 6px;
+      padding: 4px 8px; font-size: 12px; cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -215,6 +348,12 @@
   <div class="header-right">
     <div id="status-dot" title="LiveKit connection"></div>
     <span id="refresh-time">Refreshing…</span>
+    <button class="btn-schedules" onclick="openSchedulesModal()">
+      <span>📅</span> Schedules
+    </button>
+    <button class="btn-recordings" onclick="openRecordingsModal()">
+      <span>🎬</span> Recordings
+    </button>
     <button class="refresh-btn" onclick="loadDashboard()">⟳ Refresh</button>
   </div>
 </header>
@@ -286,7 +425,7 @@
     </div>
   </div>
 
-  <!-- ROOMS TABLE -->
+  <!-- ACTIVE CLASSROOMS -->
   <h2>🎓 Active Classrooms</h2>
   <div class="table-wrap">
     <table>
@@ -310,6 +449,56 @@
 </main>
 
 <div id="toast"></div>
+
+<!-- RECORDINGS MODAL -->
+<div class="modal-backdrop" id="rec-modal" onclick="handleBackdropClick(event, 'rec-modal')">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title"><span>🎬</span> Recordings Management</div>
+      <button class="modal-close" onclick="closeModal('rec-modal')" title="Close">×</button>
+    </div>
+    <div class="modal-body">
+      <table>
+        <thead><tr>
+          <th>#</th><th>Room</th><th>Teacher</th><th>Recorded At</th><th>File</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="rec-tbody">
+          <tr><td colspan="6"><div class="shimmer"></div></td></tr>
+          <tr><td colspan="6"><div class="shimmer"></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="modal-footer">
+      <span class="modal-footer-info" id="rec-count">Loading recordings…</span>
+      <button class="btn-close-modal" onclick="closeModal('rec-modal')">✕ Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCHEDULES MODAL -->
+<div class="modal-backdrop" id="sch-modal" onclick="handleBackdropClick(event, 'sch-modal')">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title"><span>📅</span> Schedule Management</div>
+      <button class="modal-close" onclick="closeModal('sch-modal')" title="Close">×</button>
+    </div>
+    <div class="modal-body">
+      <table>
+        <thead><tr>
+          <th>#</th><th>Topic</th><th>Teacher</th><th>Course / Class</th><th>Date &amp; Time</th><th>Status</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="sch-tbody">
+          <tr><td colspan="7"><div class="shimmer"></div></td></tr>
+          <tr><td colspan="7"><div class="shimmer"></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="modal-footer">
+      <span class="modal-footer-info" id="sch-count">Loading schedules…</span>
+      <button class="btn-close-modal" onclick="closeModal('sch-modal')">✕ Close</button>
+    </div>
+  </div>
+</div>
 
 <script>
   let autoTimer = null;
@@ -445,11 +634,180 @@
     }
   }
 
+  // ── Load recordings ──────────────────────────────────────────────────────
+
+  async function loadRecordings() {
+    document.getElementById('rec-count').textContent = 'Loading…';
+    try {
+      const token = localStorage.getItem('vedu_token');
+      const res = await fetch('/api/admin/recordings', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      const recs = await res.json();
+      const tbody = document.getElementById('rec-tbody');
+
+      if (!recs || recs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6"><div class="empty"><span>📭</span>No recordings yet.</div></td></tr>`;
+        document.getElementById('rec-count').textContent = '0 recordings';
+        return;
+      }
+
+      document.getElementById('rec-count').textContent = `${recs.length} recording${recs.length !== 1 ? 's' : ''} total`;
+
+      tbody.innerHTML = recs.map(r => {
+        const date = new Date(r.createdAt).toLocaleString('en-IN', {
+          day: '2-digit', month: 'short', year: 'numeric',
+          hour: '2-digit', minute: '2-digit'
+        });
+        const teacher = r.teacherId ? r.teacherId.substring(0, 8) + '…' : '—';
+        const fileName = r.fileUrl.split('/').pop();
+        return `
+          <tr id="rec-row-${r.id}">
+            <td style="color:var(--muted);font-size:12px;">${r.id}</td>
+            <td><span class="badge badge-blue">${r.roomName}</span></td>
+            <td style="font-size:12px;color:var(--muted);">${teacher}</td>
+            <td style="font-size:13px;color:var(--muted);">${date}</td>
+            <td><div class="rec-url" title="${r.fileUrl}">${fileName}</div></td>
+            <td>
+              <div class="actions-cell">
+                <a class="btn-watch" href="${r.fileUrl}" target="_blank">▶ Watch</a>
+                <button class="btn-danger" onclick="deleteRecording(${r.id}, '${r.roomName}')">
+                  🗑 Delete
+                </button>
+              </div>
+            </td>
+          </tr>`;
+      }).join('');
+    } catch (err) {
+      document.getElementById('rec-count').textContent = 'Error loading recordings';
+      console.error('Failed to load recordings:', err);
+    }
+  }
+
+  // ── Delete a recording ─────────────────────────────────────────────────────
+
+  async function deleteRecording(id, roomName) {
+    if (!confirm(`Permanently delete recording from "${roomName}"?\nThis removes the file from storage and cannot be undone.`)) return;
+    try {
+      const token = localStorage.getItem('vedu_token');
+      const res = await fetch(`/api/admin/recordings/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (res.ok) {
+        document.getElementById('rec-row-' + id)?.remove();
+        const rows = document.querySelectorAll('#rec-tbody tr[id^="rec-row-"]').length;
+        document.getElementById('rec-count').textContent =
+          rows === 0 ? '0 recordings' : `${rows} recording${rows !== 1 ? 's' : ''} total`;
+        toast('Recording deleted.', 'var(--green)');
+      } else {
+        toast('Delete failed.', 'var(--red)');
+      }
+    } catch (err) {
+      toast('Delete failed: ' + err.message, 'var(--red)');
+    }
+  }
+
+  // ── Modal controls ──────────────────────────────────────────────────────────
+
+  function openModal(id)   { document.getElementById(id).classList.add('open');    document.body.style.overflow = 'hidden'; }
+  function closeModal(id)  { document.getElementById(id).classList.remove('open'); document.body.style.overflow = ''; }
+
+  function openRecordingsModal() { openModal('rec-modal'); loadRecordings(); }
+  function openSchedulesModal()  { openModal('sch-modal'); loadSchedules(); }
+
+  // Keep old function names working (used inline in old HTML)
+  function closeRecordingsModal() { closeModal('rec-modal'); }
+
+  function handleBackdropClick(event, id) {
+    if (event.target === document.getElementById(id)) closeModal(id);
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { closeModal('rec-modal'); closeModal('sch-modal'); }
+  });
+
+  // ── Schedule management ────────────────────────────────────────────────────
+
+  async function loadSchedules() {
+    const token = localStorage.getItem('vedu_token');
+    document.getElementById('sch-count').textContent = 'Loading…';
+    try {
+      const res  = await fetch('/api/admin/schedules', { headers: { 'Authorization': 'Bearer ' + token } });
+      const data = await res.json();
+      const tbody = document.getElementById('sch-tbody');
+
+      if (!data || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7"><div class="empty"><span>📭</span>No schedules found.</div></td></tr>`;
+        document.getElementById('sch-count').textContent = '0 schedules';
+        return;
+      }
+
+      document.getElementById('sch-count').textContent = `${data.length} schedule${data.length !== 1 ? 's' : ''} total`;
+
+      tbody.innerHTML = data.map(s => {
+        const dt   = new Date(s.topicTime).toLocaleString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+        const badgeClass = s.status === 'LIVE' ? 'sch-live' : s.status === 'COMPLETED' ? 'sch-done' : 'sch-upcoming';
+        const badgeEmoji = s.status === 'LIVE' ? '🔴' : s.status === 'COMPLETED' ? '✅' : '⏰';
+        return `
+          <tr id="sch-row-${s.id}">
+            <td style="color:var(--muted);font-size:12px;">${s.id}</td>
+            <td style="font-weight:600;">${s.topicName}</td>
+            <td style="font-size:12px;color:var(--muted);">${s.teacherName || '—'}</td>
+            <td><span class="badge badge-blue">${s.topicCourse}</span> ${s.topicClass}</td>
+            <td style="font-size:13px;color:var(--muted);">${dt} IST</td>
+            <td>
+              <span class="sch-badge ${badgeClass}">${badgeEmoji} ${s.status}</span>
+            </td>
+            <td>
+              <div class="actions-cell">
+                <select class="status-select" onchange="adminSetStatus(${s.id}, this.value)">
+                  <option value="UPCOMING" ${s.status==='UPCOMING'?'selected':''}>⏰ Upcoming</option>
+                  <option value="LIVE"     ${s.status==='LIVE'    ?'selected':''}>🔴 Live</option>
+                  <option value="COMPLETED"${s.status==='COMPLETED'?'selected':''}>✅ Completed</option>
+                </select>
+                <button class="btn-danger" onclick="adminDeleteSchedule(${s.id})">
+                  🗑 Delete
+                </button>
+              </div>
+            </td>
+          </tr>`;
+      }).join('');
+    } catch (err) {
+      document.getElementById('sch-count').textContent = 'Error loading schedules';
+      console.error(err);
+    }
+  }
+
+  async function adminSetStatus(id, status) {
+    const token = localStorage.getItem('vedu_token');
+    const res = await fetch(`/api/admin/schedules/${id}/status?status=${status}`, {
+      method: 'PATCH', headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (res.ok) toast(`Status updated to ${status}`, 'var(--green)');
+    else toast('Update failed', 'var(--red)');
+    loadSchedules();
+  }
+
+  async function adminDeleteSchedule(id) {
+    if (!confirm('Permanently delete this schedule? This cannot be undone.')) return;
+    const token = localStorage.getItem('vedu_token');
+    const res = await fetch(`/api/admin/schedules/${id}`, {
+      method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (res.ok) {
+      document.getElementById('sch-row-' + id)?.remove();
+      toast('Schedule deleted.', 'var(--green)');
+      const remaining = document.querySelectorAll('#sch-tbody tr[id^="sch-row-"]').length;
+      document.getElementById('sch-count').textContent =
+        remaining + ' schedule' + (remaining !== 1 ? 's' : '') + ' total';
+    } else toast('Delete failed.', 'var(--red)');
+  }
+
   // ── Bootstrap ─────────────────────────────────────────────────────────────
 
   loadDashboard();
-  // Auto-refresh every 10 seconds
-  autoTimer = setInterval(loadDashboard, 10_000);
+  autoTimer = setInterval(loadDashboard, 30_000);
 </script>
 </body>
 </html>

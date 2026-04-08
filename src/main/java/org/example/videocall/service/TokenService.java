@@ -18,15 +18,25 @@ public class TokenService {
 
 
     public String extractUserIdFromToken(String authHeader) {
+        return extractClaim(authHeader, "sub");
+    }
+
+    public String extractEmailFromToken(String authHeader) {
+        return extractClaim(authHeader, "email");
+    }
+
+    /** Generic claim extractor — reused by both methods above. */
+    private String extractClaim(String authHeader, String claim) {
         try {
-            String token= authHeader.replace("Bearer ", "").trim();
+            String token = authHeader.replace("Bearer ", "").trim();
             String[] chunks = token.split("\\.");
             java.util.Base64.Decoder decoder = java.util.Base64.getUrlDecoder();
             String payload = new String(decoder.decode(chunks[1]));
             com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-            return mapper.readTree(payload).get("sub").asText();
+            com.fasterxml.jackson.databind.JsonNode node = mapper.readTree(payload).get(claim);
+            return (node != null && !node.isNull()) ? node.asText() : null;
         } catch (Exception e) {
             return null;
         }
-
-}}
+    }
+}

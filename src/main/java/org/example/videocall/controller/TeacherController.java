@@ -42,9 +42,12 @@ public class TeacherController {
     public ResponseEntity<?> updateprofile(@RequestHeader("Authorization") String authHeader, @RequestBody Teacher teacherData){
 
         String UserId = tokenService.extractUserIdFromToken(authHeader);
-
-        if(UserId == null ){return ResponseEntity.status(401).body("Invalid Token");}
+        if(UserId == null){return ResponseEntity.status(401).body("Invalid Token");}
         teacherData.setId(java.util.UUID.fromString(UserId));
+
+        // Extract email directly from the verified JWT — no need for client to send it
+        String email = tokenService.extractEmailFromToken(authHeader);
+        if (email != null && !email.isEmpty()) teacherData.setEmail(email);
 
         Teacher saved = teacherService.upsertTeacher(teacherData);
         return ResponseEntity.ok(saved);
@@ -105,5 +108,50 @@ public class TeacherController {
 
 
 
+    }
+
+    private static final java.util.Set<String> VALID_STATUSES =
+            java.util.Set.of("UPCOMING", "LIVE", "COMPLETED");
+
+    @PatchMapping("/schedules/{id}/status")
+    public ResponseEntity<?> updateScheduleStatus(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable Long id,
+            @RequestParam String status) {
+
+        String userId = tokenService.extractUserIdFromToken(authHeader);
+        if (userId == null) return ResponseEntity.status(401).body("Unauthorized");
+        if (!VALID_STATUSES.contains(status)) return ResponseEntity.badRequest().body("Invalid status");
+
+        return schedulesRepo.findById(id).map(schedule -> {
+            if (!schedule.getTeacherid().toString().equals(userId)) {
+                return ResponseEntity.status(403).<Object>body("Forbidden");
+            }
+            schedule.setStatus(status);
+            return ResponseEntity.ok(schedulesRepo.save(schedule));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    /** Teachers can delete ONLY their own UPCOMING schedules.
+     *  LIVE / COMPLETED schedules require admin action. */
+    @DeleteMapping("/schedules/{id}")
+    public ResponseEntity<?> deleteSchedule(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable Long id) {
+
+        String userId = tokenService.extractUserIdFromToken(authHeader);
+        if (userId == null) return ResponseEntity.status(401).body("Unauthorized");
+
+        return schedulesRepo.findById(id).map(schedule -> {
+            if (!schedule.getTeacherid().toString().equals(userId)) {
+                return ResponseEntity.status(403).<Object>body("Forbidden: not your schedule");
+            }
+            if (!"UPCOMING".equals(schedule.getStatus())) {
+                return ResponseEntity.status(403).<Object>body(
+                        "Only UPCOMING classes can be deleted by a teacher. Contact admin to remove a started/completed class.");
+            }
+            schedulesRepo.delete(schedule);
+            return ResponseEntity.<Object>ok("Deleted");
+        }).orElse(ResponseEntity.notFound().build());
     }
 }

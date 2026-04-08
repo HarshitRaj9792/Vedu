@@ -40,9 +40,12 @@ services:
       MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
     volumes:
       - minio-data:/data
-    ports:
-      - "9000:9000"
-      - "9001:9001"
+    # MinIO ports are NOT exposed publicly — recordings are proxied
+    # through Caddy at https://vedulive.net2coder.in/storage/*
+    # Uncomment below ONLY for direct admin access (firewall recommended):
+    # ports:
+    #   - "9000:9000"  # S3 API
+    #   - "9001:9001"  # MinIO Console
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 10s
@@ -174,26 +177,34 @@ services:
       # LiveKit Configuration
       - LIVEKIT_API_KEY=${LIVEKIT_API_KEY}
       - LIVEKIT_API_SECRET=${LIVEKIT_API_SECRET}
+      # Internal URL for backend <-> livekit communication
+      - LIVEKIT_URL=http://livekit:7880
       - LIVEKIT_API_URL=http://livekit:7880
 
       # MinIO Configuration
+      # Internal endpoint (used by Egress/backend to write recordings)
       - MINIO_URL=http://minio:9000
-      - MINIO_PUBLIC_URL=${MINIO_PUBLIC_URL:-http://localhost:9000}
+      # Public URL (used to build download links sent to students)
+      - MINIO_PUBLIC_URL=${MINIO_PUBLIC_URL:-https://vedulive.net2coder.in/storage}
       - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
       - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin}
-      - MINIO_BUCKET=${MINIO_BUCKET}
+      - MINIO_BUCKET=${MINIO_BUCKET:-recordings}
 
       # Redis Configuration
       - REDIS_HOST=redis
       - REDIS_PORT=6379
 
-      # Email Configuration
-      - SPRING_MAIL_HOST=${SMTP_HOST}
-      - SPRING_MAIL_PORT=${SMTP_PORT}
-      - SPRING_MAIL_USERNAME=${SMTP_USERNAME}
-      - SPRING_MAIL_PASSWORD=${SMTP_PASSWORD}
-      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH=true
-      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=true
+      # Mail (disabled — set real SMTP vars in .env to enable)
+      - SMTP_HOST=${SMTP_HOST:-localhost}
+      - SMTP_PORT=${SMTP_PORT:-25}
+      - SMTP_USERNAME=${SMTP_USERNAME:-noreply@vedu.local}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-disabled}
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
     depends_on:
       livekit:
         condition: service_started

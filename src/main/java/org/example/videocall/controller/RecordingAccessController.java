@@ -32,13 +32,11 @@ public class RecordingAccessController {
         String role = supabaseAuthService.getUserRole(userId);
 
         if ("Teacher".equalsIgnoreCase(role)) {
-            // Teachers only see their own recordings
-            List<Recording> teacherRecordings = recordingRepository.findByTeacherIdOrderByCreatedAtDesc(userId);
-            return ResponseEntity.ok(teacherRecordings);
+            // Teachers only see their own completed recordings
+            return ResponseEntity.ok(recordingRepository.findCompletedByTeacherIdOrderByCreatedAtDesc(userId));
         } else {
-            // Admins and Students see all recordings
-            List<Recording> allRecordings = recordingRepository.findAllByOrderByCreatedAtDesc();
-            return ResponseEntity.ok(allRecordings);
+            // Admins and Students see all completed recordings
+            return ResponseEntity.ok(recordingRepository.findAllCompletedOrderByCreatedAtDesc());
         }
     }
 }

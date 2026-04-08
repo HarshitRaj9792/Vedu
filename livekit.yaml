@@ -3,7 +3,10 @@ port: 7880
 rtc:
   tcp_port: 7881
   port_range_start: 50000
-  port_range_end: 50050
+  port_range_end: 51000
+  # Azure public IP — LiveKit includes this in ICE candidates so browsers
+  # can reach the media server directly for WebRTC video/audio
+  node_ip: 4.188.84.209
 
 keys:
   devkey: v3du_L1v3K1t_Secur3_Key_2026_01A!
@@ -11,9 +14,9 @@ keys:
 redis:
   address: redis:6379
 
-log_level: debug
+log_level: info
 
 webhook:
   api_key: devkey
   urls:
-    - http://backend:8080/api/meetings/livekit/webhook
+    - http://vedu-backend:8080/api/meetings/livekit/webhook

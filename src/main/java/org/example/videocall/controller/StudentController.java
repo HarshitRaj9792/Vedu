@@ -32,14 +32,18 @@ public class StudentController {
     private Schedules_repo schedules_repo;
 
     @PostMapping("/profile")
-    public ResponseEntity<?> updateProfile(@RequestHeader("Authorization") String authHeader,@RequestBody Student studentData){
+    public ResponseEntity<?> updateProfile(@RequestHeader("Authorization") String authHeader, @RequestBody Student studentData){
 
-    String UserId = tokenService.extractUserIdFromToken(authHeader);
-    if(UserId.isEmpty()){return ResponseEntity.status(401).body("Unauthorized : Invalid Token");}
-    studentData.setId(java.util.UUID.fromString(UserId));
+        String UserId = tokenService.extractUserIdFromToken(authHeader);
+        if (UserId == null || UserId.isEmpty()) { return ResponseEntity.status(401).body("Unauthorized : Invalid Token"); }
+        studentData.setId(java.util.UUID.fromString(UserId));
 
-    Student saved = studentService.upsertStudent(studentData);
-    return ResponseEntity.ok(saved);
+        // Extract email directly from the verified JWT — no need for the client to send it
+        String email = tokenService.extractEmailFromToken(authHeader);
+        if (email != null && !email.isEmpty()) studentData.setEmail(email);
+
+        Student saved = studentService.upsertStudent(studentData);
+        return ResponseEntity.ok(saved);
     }
 
     @GetMapping("/me")
@@ -56,20 +60,35 @@ public class StudentController {
     @GetMapping("/my-schedules")
     public ResponseEntity<?> getMySchedules(@RequestHeader("Authorization") String authHeader){
         String UserId = tokenService.extractUserIdFromToken(authHeader);
+        if (UserId == null || UserId.isEmpty()) {
+            return ResponseEntity.status(401).body("Unauthorized: Invalid Token");
+        }
 
-        if(UserId.isEmpty()){return ResponseEntity.status(401).body("Unauthorized : Invalid Token");}
         java.util.UUID userId = java.util.UUID.fromString(UserId);
 
-        return student_repo.findById(userId).map(student -> {
+        // If profile not yet saved, return empty list with a hint
+        java.util.Optional<Student> studentOpt = student_repo.findById(userId);
+        if (studentOpt.isEmpty()) {
+            // Student hasn't set up their profile yet — return empty with header hint
+            return ResponseEntity.ok()
+                    .header("X-Vedu-Hint", "profile-incomplete")
+                    .body(java.util.List.of());
+        }
 
-          /*  System.out.println("DEBUG - Student ID: " + userId);
-            System.out.println("DEBUG - Fetching for Course: [" + student.getCourse() + "]");
-            System.out.println("DEBUG - Fetching for Class: [" + student.getStudentClass() + "]");*/
-            // --- FOR DEBUGGING --//
+        Student student = studentOpt.get();
 
-            List<Schedules> sorted_Schedules = schedules_repo
-                    .findByTopicCourseAndTopicClassOrderByTopicTimeAscAllIgnoreCase(student.getCourse(), student.getStudentClass());
-            return  ResponseEntity.ok(sorted_Schedules);
-        }).orElse(ResponseEntity.status(404).build());
+        // Guard: if course or class not filled, can't match schedules
+        if (student.getCourse() == null || student.getCourse().isBlank()
+                || student.getStudentClass() == null || student.getStudentClass().isBlank()) {
+            return ResponseEntity.ok()
+                    .header("X-Vedu-Hint", "profile-incomplete")
+                    .body(java.util.List.of());
+        }
+
+        List<Schedules> schedules = schedules_repo
+                .findByTopicCourseAndTopicClassOrderByTopicTimeAscAllIgnoreCase(
+                        student.getCourse(), student.getStudentClass());
+
+        return ResponseEntity.ok(schedules);
     }
 }

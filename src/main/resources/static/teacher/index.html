@@ -320,8 +320,8 @@
             // Pre-fill form
             document.getElementById('form-name').value = data.fullName || '';
             document.getElementById('form-spec').value = data.specialization || '';
-            document.getElementById('form-eid').value = data.employeeId || '';
-            document.getElementById('form-bio').value = data.description || ''; // Matches Java Entity
+            document.getElementById('form-eid').value  = data.employeeId || '';
+            document.getElementById('form-bio').value  = data.description || '';
           }
         }
       } catch (err) { console.error("Fetch error:", err); }
@@ -341,10 +341,10 @@
       saveBtn.disabled = true;
 
       const payload = {
-        fullName: document.getElementById('form-name').value,
+        fullName:       document.getElementById('form-name').value,
         specialization: document.getElementById('form-spec').value,
-        employeeId: document.getElementById('form-eid').value,
-        description: document.getElementById('form-bio').value
+        employeeId:     document.getElementById('form-eid').value,
+        description:    document.getElementById('form-bio').value
       };
 
       try {
@@ -373,7 +373,6 @@
     };
 
     window.onload = () => {
-      // Check if user is logged in
       if (!localStorage.getItem("vedu_token")) {
         window.location.href = "/login.html";
         return;

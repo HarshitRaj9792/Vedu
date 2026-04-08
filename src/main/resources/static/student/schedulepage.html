@@ -3,222 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vedu | Student Schedule</title>
+    <title>Vedu | Class Schedule</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #3c52ff;
-            --accent: #9333ea;
-            --bg: #0f172a;
-            --glass: rgba(255, 255, 255, 0.05);
-            --border: rgba(255, 255, 255, 0.1);
+            --accent:  #9333ea;
+            --green:   #10b981;
+            --bg:      #0f172a;
+            --glass:   rgba(255,255,255,0.05);
+            --border:  rgba(255,255,255,0.1);
         }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background:var(--bg); color:white; font-family:'Inter',sans-serif; padding:40px; min-height:100vh; }
 
-        body { 
-            background: var(--bg); 
-            color: white; 
-            font-family: 'Inter', sans-serif; 
-            padding: 40px; 
-            margin: 0;
-            min-height: 100vh;
+        .glass-panel {
+            background: var(--glass); backdrop-filter: blur(20px);
+            border-radius: 30px; padding: 40px; border: 1px solid var(--border);
+            max-width: 1200px; margin: 0 auto;
         }
-
-        .glass-panel { 
-            background: var(--glass); 
-            backdrop-filter: blur(20px); 
-            border-radius: 30px; 
-            padding: 40px; 
-            border: 1px solid var(--border);
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .header { 
-            display: flex; 
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 40px; 
-        }
-
-        .header h1 { 
-            margin: 0; 
-            font-size: 32px; 
+        .header { margin-bottom: 40px; }
+        .header h1 {
+            font-size: 32px;
             background: linear-gradient(45deg, var(--primary), var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
         }
 
-        .course-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
-            gap: 25px; 
+        .course-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px,1fr)); gap: 25px; }
+
+        /* ── Card ── */
+        .course-card {
+            background: rgba(255,255,255,0.03); border-radius: 20px;
+            border: 1px solid var(--border); overflow: hidden;
+            transition: 0.3s; display: flex; flex-direction: column;
         }
+        .course-card:hover { transform: translateY(-5px); background: rgba(255,255,255,0.07); }
+        .course-card.live-card  { border-color: var(--green); box-shadow: 0 0 18px rgba(16,185,129,0.15); }
+        .course-card.done-card  { opacity: 0.6; }
 
-        /* Container Card */
-        .course-card { 
-            background: rgba(255, 255, 255, 0.03); 
-            border-radius: 20px; 
-            border: 1px solid var(--border); 
-            overflow: hidden; 
-            transition: 0.3s ease;
-            display: flex;
-            flex-direction: column;
+        .card-banner {
+            height: 100px; display: flex; align-items: center;
+            justify-content: center; font-size: 36px;
         }
+        .banner-upcoming { background: linear-gradient(45deg, #1e3a5f, #2d1b69); }
+        .banner-live     { background: linear-gradient(45deg, #064e3b, #065f46); }
+        .banner-done     { background: linear-gradient(45deg, #1e293b, #334155); }
 
-        .course-card:hover { 
-            transform: translateY(-5px); 
-            background: rgba(255, 255, 255, 0.08); 
-            border-color: var(--primary);
-        }
+        .card-body { padding: 22px; flex-grow: 1; display: flex; flex-direction: column; gap: 10px; }
 
-        .card-banner { 
-            height: 100px; 
-            background: linear-gradient(45deg, var(--primary), var(--accent)); 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: 35px;
-            opacity: 0.8;
-        }
-
-        .card-body { padding: 25px; flex-grow: 1; }
-
-        .topic-title { font-size: 20px; font-weight: 700; margin-bottom: 15px; display: block; }
-        
-        .detail-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #94a3b8;
-            font-size: 14px;
-            margin-bottom: 10px;
-        }
-
-        /* Status Badges */
+        /* ── Status pill ── */
         .status-pill {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 100px;
-            font-size: 11px;
-            font-weight: 800;
-            margin-bottom: 15px;
-            text-transform: uppercase;
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 4px 12px; border-radius: 100px;
+            font-size: 11px; font-weight: 800; text-transform: uppercase;
+            width: fit-content;
         }
-        .live { background: #10b981; color: white; box-shadow: 0 0 15px rgba(16, 185, 129, 0.3); }
-        .upcoming { background: rgba(255,255,255,0.1); color: #cbd5e1; }
+        .pill-upcoming { background: rgba(255,255,255,0.08); color: #94a3b8; }
+        .pill-live     { background: rgba(16,185,129,0.2);   color: #34d399; box-shadow: 0 0 10px rgba(16,185,129,0.25); }
+        .pill-done     { background: rgba(148,163,184,0.1);  color: #64748b; }
 
-        .join-btn { 
-            width: 100%; 
-            background: rgba(60, 82, 255, 0.1); 
-            color: white; 
-            border: 1px solid var(--primary); 
-            padding: 12px; 
-            border-radius: 12px; 
-            cursor: pointer; 
-            transition: 0.3s; 
-            font-weight: bold;
-            margin-top: 10px;
+        .pulse-dot { width:7px; height:7px; border-radius:50%; background:#34d399; animation: pulse 1.4s infinite; }
+        @keyframes pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.6);opacity:.4} }
+
+        .topic-title { font-size: 18px; font-weight: 700; }
+        .detail-row  { display: flex; align-items: center; gap: 8px; color: #94a3b8; font-size: 13px; }
+
+        .countdown-chip {
+            font-size: 12px; color: #f59e0b;
+            background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,.25);
+            border-radius: 8px; padding: 4px 10px; display: inline-block;
         }
 
-        .join-btn:hover:not(:disabled) { background: var(--primary); }
-        .join-btn:disabled { opacity: 0.4; cursor: not-allowed; border-color: gray; }
+        /* ── Action buttons ── */
+        .action-btn {
+            width: 100%; padding: 12px; border-radius: 12px;
+            font-weight: 700; font-size: 14px; cursor: pointer;
+            transition: 0.3s; border: none; margin-top: auto;
+        }
+        .btn-enter    { background: var(--green); color: white; }
+        .btn-enter:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(16,185,129,.3); }
+        .btn-recs     { background: rgba(123,147,255,0.12); color: #7b93ff; border: 1px solid rgba(123,147,255,.3); }
+        .btn-recs:hover { background: rgba(123,147,255,0.25); }
 
-        #loading-state { text-align: center; padding: 40px; color: #94a3b8; }
+        /* Upcoming = info only, no button — but we still show a "starts in" chip */
+
+        #loading-state { text-align:center; padding:50px; color:#94a3b8; }
     </style>
 </head>
 <body>
-
-    <div class="glass-panel">
-        <div class="header">
-            <h1>Class Schedules</h1>
-            <p style="color: #94a3b8;">Manage your learning journey and upcoming live sessions.</p>
-        </div>
-
-        <div id="loading-state">Syncing with Vedu Server...</div>
-        
-        <div class="course-grid" id="schedule-container">
-            </div>
+<div class="glass-panel">
+    <div class="header">
+        <h1>Class Schedules</h1>
+        <p style="color:#94a3b8;margin-top:6px;">Your upcoming, live, and completed sessions.</p>
     </div>
+    <div id="loading-state">Syncing with Vedu Server…</div>
+    <div class="course-grid" id="schedule-container"></div>
+</div>
 
-    <script>
-        // Use relative path since HTML is in the 'static' folder
-        const API_URL = "/api/student/my-schedules";
+<script>
+    const API_URL = "/api/student/my-schedules";
 
-        async function fetchSchedules() {
-            const container = document.getElementById('schedule-container');
-            const loader = document.getElementById('loading-state');
+    const LIVE_BEFORE_MS = 30  * 60 * 1000;
+    const LIVE_AFTER_MS  = 3   * 60 * 60 * 1000;
 
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('vedu_token')}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
+    function resolveStatus(data) {
+        // DB COMPLETED is authoritative
+        if (data.status === 'COMPLETED') return 'completed';
+        const now   = Date.now();
+        const start = new Date(data.topicTime).getTime();
+        if ((start - now) > LIVE_BEFORE_MS) return 'upcoming';
+        if (now <= start + LIVE_AFTER_MS)   return 'live';
+        return 'completed';
+    }
 
-                if (!response.ok) throw new Error("Could not fetch schedules");
+    function formatCountdown(topicTime) {
+        const diff = new Date(topicTime).getTime() - Date.now();
+        if (diff <= 0) return '';
+        const h = Math.floor(diff / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        if (h > 0) return `Starts in ${h}h ${m}m`;
+        return `Starts in ${m}m ${Math.floor((diff % 60000)/1000)}s`;
+    }
 
-                const schedules = await response.json();
-                loader.style.display = 'none';
+    function createCard(data) {
+        const status  = resolveStatus(data);
+        const dateObj = new Date(data.topicTime);
+        const dateStr = dateObj.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+        const timeStr = dateObj.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
 
-                if (schedules.length === 0) {
-                    container.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #94a3b8;">No classes scheduled at the moment.</p>`;
-                    return;
-                }
+        // ── Banner
+        const bannerClass = status === 'live' ? 'banner-live' : status === 'completed' ? 'banner-done' : 'banner-upcoming';
+        const emoji       = status === 'live' ? '📡' : status === 'completed' ? '✅' : '📅';
+        const cardClass   = status === 'live' ? 'live-card' : status === 'completed' ? 'done-card' : '';
 
-                container.innerHTML = schedules.map(data => createCard(data)).join('');
+        // ── Status pill
+        let pill = '';
+        if (status === 'live') {
+            pill = `<span class="status-pill pill-live"><span class="pulse-dot"></span>Live Now</span>`;
+        } else if (status === 'completed') {
+            pill = `<span class="status-pill pill-done">✅ Ended</span>`;
+        } else {
+            pill = `<span class="status-pill pill-upcoming">⏰ Upcoming</span>`;
+        }
 
-            } catch (error) {
-                loader.innerText = "Error loading schedules. Please check your connection.";
-                console.error(error);
+        // ── Countdown (only for upcoming)
+        const countdown = status === 'upcoming'
+            ? `<span class="countdown-chip">${formatCountdown(data.topicTime)}</span>` : '';
+
+        // ── Action area — different per status
+        let action = '';
+        if (status === 'live') {
+            action = `<button class="action-btn btn-enter" onclick="enterClass('${data.topicName}')">🚀 Join Classroom Now</button>`;
+        } else if (status === 'completed') {
+            action = `<button class="action-btn btn-recs" onclick="goToRecordings()">📼 View Recordings</button>`;
+        }
+        // UPCOMING → no button, just info
+
+        return `
+        <div class="course-card ${cardClass}">
+            <div class="card-banner ${bannerClass}">${emoji}</div>
+            <div class="card-body">
+                ${pill}
+                <span class="topic-title">${data.topicName}</span>
+                <div class="detail-row">📅 <span>${dateStr}</span></div>
+                <div class="detail-row">🕒 <span>${timeStr} IST</span></div>
+                <div class="detail-row">👨‍🏫 <span>${data.teacherName || 'TBA'}</span></div>
+                <div class="detail-row">📚 <span>${data.topicCourse} — ${data.topicClass}</span></div>
+                ${countdown}
+                ${action}
+            </div>
+        </div>`;
+    }
+
+    async function fetchSchedules() {
+        const container = document.getElementById('schedule-container');
+        const loader    = document.getElementById('loading-state');
+        const token     = localStorage.getItem('vedu_token');
+        if (!token) { window.location.href = '../login.html'; return; }
+
+        try {
+            const res = await fetch(API_URL, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!res.ok) throw new Error('Server error ' + res.status);
+
+            // Backend sends this header when student profile is incomplete
+            const hint = res.headers.get('X-Vedu-Hint');
+
+            const schedules = await res.json();
+            loader.style.display = 'none';
+
+            if (hint === 'profile-incomplete' || !schedules.length) {
+                const msg = hint === 'profile-incomplete'
+                    ? `⚠️ Your profile is incomplete.<br>
+                       Please set your <strong>Course</strong> and <strong>Class/Batch</strong>
+                       in your <a href="index.html" style="color:#7b93ff;">profile</a> to see your schedules.`
+                    : 'No classes scheduled yet. Check back later!';
+                container.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:#94a3b8;line-height:1.8;">${msg}</p>`;
+                return;
             }
+            container.innerHTML = schedules.map(createCard).join('');
+        } catch (err) {
+            loader.innerText = 'Error loading schedules. Please check your connection.';
+            console.error(err);
         }
+    }
 
-        function createCard(data) {
-            const isLive = data.status.toLowerCase() === 'live';
-            const dateObj = new Date(data.topicTime);
-            
-            return `
-                <div class="course-card">
-                    <div class="card-banner">${isLive ? '📡' : '📅'}</div>
-                    <div class="card-body">
-                        <span class="status-pill ${isLive ? 'live' : 'upcoming'}">
-                            ${isLive ? '● Live Now' : 'Upcoming'}
-                        </span>
-                        <span class="topic-title">${data.topicName}</span>
-                        
-                        <div class="detail-row">
-                            <span>🕒</span>
-                            <span>${dateObj.toLocaleDateString()} at ${dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                        </div>
-                        
-                        <div class="detail-row">
-                            <span>👨‍🏫</span>
-                            <span>Instructor: ${data.teacherName || 'TBA'}</span>
-                        </div>
-                        
-                        <div class="detail-row">
-                            <span>📚</span>
-                            <span>${data.topicCourse} - ${data.topicClass}</span>
-                        </div>
+    function enterClass(roomId) {
+        window.location.href = `../lobby.html?room=${encodeURIComponent(roomId)}&role=Student`;
+    }
 
-                        <button class="join-btn" 
-                                ${isLive ? '' : 'disabled'} 
-                                onclick="enterClass('${data.roomId}')">
-                            ${isLive ? 'Join Classroom' : 'Room Locked'}
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
+    function goToRecordings() {
+        window.location.href = 'recordings.html';
+    }
 
-        function enterClass(roomId) {
-            // Redirect to your LiveKit/Video room page
-            window.location.href = `lobby.html?room=${roomId}`;
-        }
-
-        // Initialize on page load
-        window.onload = fetchSchedules;
-    </script>
+    window.onload = () => {
+        fetchSchedules();
+        // Re-render every 30s so live/upcoming transitions happen automatically
+        setInterval(fetchSchedules, 30000);
+    };
+</script>
 </body>
 </html>

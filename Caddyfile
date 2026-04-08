@@ -1,8 +1,30 @@
-:80 {
-    # LiveKit WebSocket — must come before the catch-all
-    reverse_proxy /rtc* livekit:7880
-    reverse_proxy /twirp* livekit:7880
+vedulive.net2coder.in {
 
-    # Spring Boot backend (serves HTML + REST API)
-    reverse_proxy /* vedu-backend:8080
+    # ── 1. LiveKit Signal WebSocket (/rtc*) ───────────────────────────────
+    # handle blocks are mutually exclusive and ordered — first match wins
+    handle /rtc* {
+        reverse_proxy livekit:7880
+    }
+
+    # ── 2. LiveKit HTTP API (/twirp*) ─────────────────────────────────────
+    handle /twirp* {
+        reverse_proxy livekit:7880
+    }
+
+    # ── 3. MinIO recordings (students download over HTTPS) ────────────────
+    # Strips /storage prefix before forwarding: /storage/recordings/x.mp4 → /recordings/x.mp4
+    handle /storage/* {
+        uri strip_prefix /storage
+        reverse_proxy minio:9000
+    }
+
+    # ── 4. Everything else → Spring Boot backend ──────────────────────────
+    handle {
+        reverse_proxy vedu-backend:8080
+    }
+}
+
+# HTTP → HTTPS redirect
+http://vedulive.net2coder.in {
+    redir https://{host}{uri} permanent
 }

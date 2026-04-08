@@ -18,6 +18,10 @@ public class TeacherService {
             existingTeacher.setSpecialization(teacherRequest.getSpecialization());
             existingTeacher.setDescription(teacherRequest.getDescription());
             existingTeacher.setEmployeeId(teacherRequest.getEmployeeId());
+            // Only update email if explicitly provided — never null out an existing value
+            if (teacherRequest.getEmail() != null && !teacherRequest.getEmail().isEmpty()) {
+                existingTeacher.setEmail(teacherRequest.getEmail());
+            }
 
             return teacher_repo.save(existingTeacher);
         }).orElseGet(() -> teacher_repo.save(teacherRequest));

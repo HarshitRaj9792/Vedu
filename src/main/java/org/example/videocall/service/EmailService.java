@@ -2,10 +2,10 @@ package org.example.videocall.service;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.videocall.model.Schedules;
 import org.example.videocall.model.Student;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -16,16 +16,21 @@ import java.util.List;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class EmailService {
 
-    private final JavaMailSender javaMailSender;
+    // Optional — null when SMTP is disabled (spring.mail.host not configured with real server)
+    @Autowired(required = false)
+    private JavaMailSender javaMailSender;
 
     @Value("${spring.mail.username:no-reply@vedu.com}")
     private String senderEmail;
 
     @Async
     public void sendClassNotification(Schedules schedule, List<Student> students) {
+        if (javaMailSender == null) {
+            log.warn("SMTP not configured — skipping email notification for '{}'", schedule.getTopicName());
+            return;
+        }
         if (students == null || students.isEmpty()) {
             log.info("No students found for course '{}' and class '{}'. Skipping email notification.", schedule.getTopicCourse(), schedule.getTopicClass());
             return;

@@ -27,8 +27,8 @@
 
 **Harshit Raj** is a passionate full-stack developer from India, building real-world applications with modern Java and cloud-native technologies. Vedu is his flagship project — a complete virtual classroom infrastructure built entirely from scratch, containerised, and deployed on Azure.
 
-- 🌐 Domain: [vedulive.net2coder.in](https://vedulive.net2coder.in)
-- 🧑‍💻 GitHub: [@harshitraj](https://github.com/HarshitRaj9792)
+- 🌐 Hosted at: [vedulive.net2coder.in](https://vedulive.net2coder.in)
+- 🧑‍💻 GitHub: [@harshit.java](https://github.com/HarshitRaj9792)
 - 📧 Email:  Harshitrajdk@gmail.com
 - 🏫 Project: BCA Final Year Project — *Virtual Classroom with WebRTC, Egress Recording & Role-Based Access*
 
